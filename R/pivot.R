@@ -51,6 +51,7 @@ grp_cols <- function (x) {
 }
 
 pivot_gc <- function (x, cols) {
+  x <- expand_igrps(x)
   grps <- syms(setdiff(flatten(map(dplyr::groups(x), as.character)), cols))
 
   x %>%
