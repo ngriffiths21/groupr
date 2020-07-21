@@ -1,7 +1,7 @@
 igrouped_df <- function (x = data.frame(), groups = data.frame()) {
-  x <- vctrs::vec_rbind(x, data.frame())
-  groups <- vctrs::vec_rbind(groups, data.frame())
-  vctrs::new_data_frame(x, class = c("igrouped_df", "tbl_df", "tbl"), groups = groups)
+  x <- vec_rbind(x, data.frame())
+  groups <- vec_rbind(groups, data.frame())
+  new_data_frame(x, class = c("igrouped_df", "tbl_df", "tbl"), groups = groups)
 }
 
 group_by2 <- function (data, ...) {
@@ -11,9 +11,23 @@ group_by2 <- function (data, ...) {
   grouped <- dplyr::group_by(data, !!!gvars)
   groups <- attr(grouped, "groups")
 
-  groups$I <- reduce(imap(dots, ~ groups[[.y]] %in% .x), `|`)
-  igrouped_df(grouped, groups)
+  groups_out <- imap_dfc(dots, ~ cast_grps(groups, .x, .y)) %>%
+    cbind(groups[".rows"])
+
+  igrouped_df(grouped, groups_out)
 }
+
+cast_grps <- function (groups, .x, .y) {
+  polymiss(
+    groups[[.y]],
+    to_miss(groups[[.y]] %in% .x)
+  )
+}
+
+to_miss <- function (x) {
+  ifelse(x, "I", NA_character_)
+}
+
 
 # maps a function over an igroup
 igroup_map <- function(data, fn) {
@@ -34,15 +48,13 @@ expand_igrps <- function (x) {
   Idata <- x[group_data(x)[I,]$.rows[[1]],]
   nonIdata <- x[-group_data(x)[I,]$.rows[[1]],]
 
-  
-  
   nonI <- group_data(x)[!group_data(x)$I,]
   
   nonIvals <- nonI[!names(nonI) %in% c(".rows", "I")]
 
   expanded <- bind_cols(nonIvals, tibble(data = list(Idata[!names(Idata) %in% names(nonIvals)])))
 
-  vctrs::vec_rbind(tidyr::unnest(expanded, cols = data),
+  vec_rbind(tidyr::unnest(expanded, cols = data),
                    nonIdata)
 }
 
@@ -51,11 +63,11 @@ group_data.igrouped_df <- function (.data) {
 }
 
 group_vars.igrouped_df <- function (x) {
-  setdiff(names(group_data(x)), c(".rows", "I"))
+  setdiff(names(dplyr::group_data(x)), c(".rows", "I"))
 }
 
 tbl_sum.igrouped_df <- function (x) {
-  grps <- n_groups(x)
-  group_sum <- paste0(paste0(group_vars(x), collapse = ", "), " [", formatC(grps, big.mark = ","), "]")
+  grps <- dplyr::n_groups(x)
+  group_sum <- paste0(paste0(dplyr::group_vars(x), collapse = ", "), " [", formatC(grps, big.mark = ","), "]")
   c(NextMethod(), c(Groups = group_sum))
 }
