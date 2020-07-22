@@ -15,3 +15,11 @@ format.polymiss <- function (x, ...) {
 
   ifelse(is.na(miss), as.character(x2), "<I>")
 }
+
+inapplicable <- function (x) {
+  if(!("polymiss" %in% class(x))) { return(rep_along(x, NA)) }
+
+  miss <- field(x, "miss")
+
+  !is.na(miss)
+}

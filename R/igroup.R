@@ -4,6 +4,12 @@ igrouped_df <- function (x = data.frame(), groups = data.frame()) {
   new_data_frame(x, class = c("igrouped_df", "tbl_df", "tbl"), groups = groups)
 }
 
+igroup_vars <- function (x) {
+  grps <- attr(x, "groups")
+  map(grps[-length(grps)],
+      ~ unique(field(.[inapplicable(.)], "x")))
+}
+
 group_by2 <- function (data, ...) {
   dots <- list2(...)
   gvars <- syms(names(dots))
@@ -39,22 +45,54 @@ igroup_map <- function(data, fn) {
 }
 
 expand_igrps <- function (x) {
+  inap_grps <- inap_selector(group_data(x))
+  inaps <- group_data(x)[inap_grps,]
+  apps <- group_data(x)[!inap_grps,]
+  inaps
+
+  map_dfr(1:nrow(inaps), 
+      ~ expand_item(x, as.list(inaps[.,])))
+}
+
+expand_item <- function (data, grow) {
+  grow <- grow[-length(grow)]
+  selectors <- grow[!map_lgl(grow, inapplicable)]
+
+  out <- data[reduce(imap(selectors, ~ data[[.y]] == field(.x, "x")), `&`),]
+  ivars <- igroup_vars(out)
+  newgrps <- ivars[map_lgl(ivars, ~ length(.) > 0)]
+  expand_igrp(group_by2(out, !!!newgrps))
+}
+
+inap_selector <- function (x) {
+  x[-length(x)] %>%
+    map(~ inapplicable(.)) %>%
+    transpose() %>%
+    map_lgl(~ reduce(., `|`))
+}
+
+
+expand_igrp <- function (x) {
   if(length(group_vars(x)) > 1) {
     stop("argument x has multiple groups, and cannot tell which is inapplicable (expand_igrps)")
   }
 
-  I <- group_data(x)$I
+  I <- inapplicable(group_data(x)[[1]])
 
   Idata <- x[group_data(x)[I,]$.rows[[1]],]
   nonIdata <- x[-group_data(x)[I,]$.rows[[1]],]
 
-  nonI <- group_data(x)[!group_data(x)$I,]
+  nonI <- group_data(x)[!I,]
   
-  nonIvals <- nonI[!names(nonI) %in% c(".rows", "I")]
+  nonIvals <- nonI[!names(nonI) %in% c(".rows")]
 
   expanded <- bind_cols(nonIvals, tibble(data = list(Idata[!names(Idata) %in% names(nonIvals)])))
 
-  vec_rbind(tidyr::unnest(expanded, cols = data),
+  coerced <- dplyr::mutate(expanded,
+                           across(where(~ "polymiss" %in% class(.)),
+                                        ~ field(., "x")))
+
+  vec_rbind(tidyr::unnest(coerced, cols = data),
                    nonIdata)
 }
 
