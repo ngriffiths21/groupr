@@ -6,7 +6,7 @@ testa <- tibble::tribble(
   "ok", 2, 3.1,
   "notok", 2, 4.9
 ) %>%
-  dplyr::group_by(ok, grp)
+  group_by2(ok = NULL, grp = NULL)
 
 testb <-
   tibble::tribble(
@@ -14,18 +14,18 @@ testb <-
     1, 1.9, NA,
     2, 3.1, 4.9
   ) %>%
-  dplyr::group_by(grp)
+  group_by2(grp = NULL)
 
 testc <- 
   tibble::tribble(
-    ~main, ~grp, ~val,
-    1, "sub1", 1.9,
-    1, "sub2", 3.1,
-    2, "sub1", 9.7,
-    2, "sub2", 3.8,
-    3, NA, 4.0
+    ~grp, ~type, ~subgrp, ~val,
+    1, "sub", "sub1", 1.9,
+    1, "sub", "sub2", 3.1,
+    2, "sub", "sub1", 9.7,
+    2, "sub", "sub2", 3.8,
+    2, "main", "na", 4.0
   ) %>%
-  dplyr::group_by(grp, main, .add = TRUE)
+  group_by2(grp = NULL, type = NULL, subgrp = "na")
 
 test_that("can pivot group to column", {
   expect_equal(pivot_gc(testa, "ok"), testb)

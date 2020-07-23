@@ -14,7 +14,10 @@ pivot_grps <- function (x, rows = NULL, cols = NULL) {
 col_grps <- function (x, cols) {
   assert_that(is.list(cols), msg = "argument cols must be a list of strings (col_grps)")
   
-  imap_dfr(cols, ~ make_col(x, .x, .y))
+  cbind(
+    x[group_cols(data = x)],
+    imap_dfr(cols, ~ make_col(x, .x, .y))
+  )
 }
 
 make_col <- function (x, col, nm) {
@@ -26,9 +29,11 @@ make_col <- function (x, col, nm) {
 }
 
 pivot_cg <- function (x, cols) {
-  dplyr::group_modify(
+  old_igrps <- igroup_vars(x)
+  out <- dplyr::group_modify(
     x, ~ col_grps(., cols)
   )
+  group_by2(out, !!!old_igrps)
 }
             
 grp_cols <- function (x) {
@@ -51,11 +56,11 @@ grp_cols <- function (x) {
 }
 
 pivot_gc <- function (x, cols) {
-  x <- expand_igrps(x)
-  grps <- syms(setdiff(flatten(map(dplyr::groups(x), as.character)), cols))
+  grps <- igroup_vars(x)[!names(igroup_vars(x)) %in% cols]
+  exp <- expand_igrps(group_by2(x, !!!grps))
 
-  x %>%
-    dplyr::group_by(!!!grps) %>%
+  exp %>%
+    group_by(!!!syms(group_vars(exp))) %>%
     dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(cols))))
 }
 
