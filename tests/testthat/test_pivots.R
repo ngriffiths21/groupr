@@ -34,9 +34,10 @@ test_that("can pivot group to column", {
 test_that("can pivot column to group", {
   obj <- pivot_cg(testb, list(val = c("val_ok", "val_notok"))) %>%
     dplyr::rename(ok = name) %>%
+    ungroup() %>%
     dplyr::mutate(ok = dplyr::recode(ok, "val_ok" = "ok", "val_notok" = "notok")) %>%
     tidyr::drop_na(val) %>%
-    dplyr::group_by(ok, grp)
+    group_by2(ok = NULL, grp = NULL)
   expect_mapequal(obj, testa)
 })
 

@@ -24,6 +24,11 @@ group_by2 <- function (data, ...) {
   igrouped_df(grouped, groups_out)
 }
 
+ungroup.igrouped_df <- function (x) {
+  attr(x, "groups") <- NULL
+  as_tibble(x)
+}
+
 cast_grps <- function (groups, .x, .y) {
   polymiss(
     groups[[.y]],

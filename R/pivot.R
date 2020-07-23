@@ -56,12 +56,15 @@ grp_cols <- function (x) {
 }
 
 pivot_gc <- function (x, cols) {
-  grps <- igroup_vars(x)[!names(igroup_vars(x)) %in% cols]
+  old_igrps <- igroup_vars(x)
+  grps <- old_igrps[!names(old_igrps) %in% cols]
   exp <- expand_igrps(group_by2(x, !!!grps))
 
   exp %>%
     group_by(!!!syms(group_vars(exp))) %>%
-    dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(cols))))
+    dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(cols)))) %>%
+    group_by2(!!!grps)
+
 }
 
 slice_cbind <- function (x, rows) {
