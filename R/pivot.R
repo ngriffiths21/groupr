@@ -64,7 +64,6 @@ pivot_gc <- function (x, cols) {
     group_by(!!!syms(group_vars(exp))) %>%
     dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(cols)))) %>%
     group_by2(!!!grps)
-
 }
 
 slice_cbind <- function (x, rows) {

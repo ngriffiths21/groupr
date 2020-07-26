@@ -9,6 +9,7 @@ polymiss <- function(x = double(), miss = character()) {
   new_polymiss(x, miss)
 }
 
+#' @export
 format.polymiss <- function (x, ...) {
   x2 <- field(x, "x")
   miss <- field(x, "miss")

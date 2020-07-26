@@ -10,9 +10,29 @@ igroup_vars <- function (x) {
       ~ unique(field(.[inapplicable(.)], "x")))
 }
 
+#' Group a tibble with inapplicable groups
+#'
+#' Similar to dplyr::group_by, this function groups a
+#' tibble while also marking certain groups as inapplicable.
+#'
+#' A grouped tibble has one or more grouping variables, where each unique
+#' combination of values identifies a group. This function allows some of
+#' the values to be marked inapplicable, such that the corresponding rows
+#' are not considered to be grouped on that variable at all.
+#'
+#' Grouping variables, and inapplicable values, are passed as arguments in
+#' the form \code{group_var = c(value1, value2, ...)}. Any included values
+#' will be marked inapplicable. If an argument has length 0 or is NULL, no
+#' values will be marked inapplicable.
+#'
+#' @param data A tibble to group
+#' @param ... Arguments of the form \code{name = c(inapplicableval1, ...)}
+#' @return An igrouped tibble
+#'
+#' @export
 group_by2 <- function (data, ...) {
   dots <- list2(...)
-  if(length(dots) == 0) { return(data) }
+  if(length(dots) == 0) { return(ungroup(data)) }
   gvars <- syms(names(dots))
 
   grouped <- dplyr::group_by(data, !!!gvars)
@@ -24,6 +44,15 @@ group_by2 <- function (data, ...) {
   igrouped_df(grouped, groups_out)
 }
 
+#' Ungroup a tibble with inapplicable groups
+#'
+#' Ungroup method for tibbles that have inapplicable groups.
+#'
+#' @param x An igrouped tibble (as created by group_by2)
+#' @return A tibble with no groups. The "groups" attribute will be set to
+#' contain one column, .rows, with a single value that lists all rows.
+#'
+#' @export
 ungroup.igrouped_df <- function (x) {
   attr(x, "groups") <- NULL
   as_tibble(x)
@@ -118,14 +147,17 @@ expand_igrp <- function (x) {
   tidyr::unnest(coerced, cols = data)
 }
 
+#' @export
 group_data.igrouped_df <- function (.data) {
   attr(.data, "groups")
 }
 
+#' @export
 group_vars.igrouped_df <- function (x) {
   setdiff(names(dplyr::group_data(x)), c(".rows", "I"))
 }
 
+#' @export
 tbl_sum.igrouped_df <- function (x) {
   grps <- dplyr::n_groups(x)
   group_sum <- paste0(paste0(dplyr::group_vars(x), collapse = ", "), " [", formatC(grps, big.mark = ","), "]")

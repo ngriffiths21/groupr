@@ -47,6 +47,8 @@ test_that("can pivot both ways", {
   expect_s3_class(res, "tbl")
 })
 
+pivot_grps(testb, rows = list(val = c("val_ok", "val_notok")))
+
 test_that("can ignore I groups", {
   res <- pivot_grps(testa, cols = "grp")
 })
