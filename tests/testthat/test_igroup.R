@@ -37,7 +37,7 @@ test_that("group_by2 ungroups if empty args", {
 
 test_that("can expand an igrouped dataframe", {
   res <- select(ungroup(expand_igrps(tsti_b)), subgrp, val)
-  cmp <- tibble(
+  cmp <- tibble::tibble(
     subgrp = c("sub1", "sub2", "sub1", "sub2", "sub1", "sub2"),
     val = c(1.9, 3.1, 9.7, 3.8, 4.0, 4.0)
   )

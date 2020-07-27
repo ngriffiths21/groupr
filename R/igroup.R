@@ -140,11 +140,10 @@ expand_igrp <- function (x) {
 
   expanded <- bind_cols(nonIvals, tibble(data = list(Idata[!names(Idata) %in% names(nonIvals)])))
 
-  coerced <- dplyr::mutate(expanded,
-                           across(where(~ "polymiss" %in% class(.)),
-                                        ~ field(., "x")))
+  sel_plm <- map_lgl(expanded, ~ "polymiss" %in% class(.))
+  expanded[sel_plm] <- map_df(expanded[sel_plm], ~ field(., "x"))
 
-  tidyr::unnest(coerced, cols = data)
+  tidyr::unnest(expanded, cols = .data$data)
 }
 
 #' @export

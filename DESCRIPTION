@@ -1,16 +1,28 @@
 Package: groups
-Title: What the Package Does (One Line, Title Case)
+Title: Groups with Inapplicable Values
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Nicholas",
+           family = "Griffiths",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "ngriffiths21@gmail.com",
+           comment = c(ORCID = "0000-0001-8166-9045"))
+Description: The groups package provides a more powerful version of grouped
+  tibbles from dplyr. It allows groups in a tibble to be marked inapplicable,
+  which is a simple but widely useful way to express structure in a dataset.
+  It also provides replacements for common tidyverse functions that are
+  centered around groupings with potentially inapplicable values.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Suggests: 
     testthat
 RoxygenNote: 7.0.2
+Imports: 
+    dplyr,
+    rlang,
+    vctrs,
+    purrr,
+    stringr,
+    tidyr,
+    tibble
