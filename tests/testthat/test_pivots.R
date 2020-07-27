@@ -45,10 +45,22 @@ test_that("can pivot both ways", {
   res <- pivot_grps(testb, rows = list(val = c("val_ok", "val_notok")),
                cols = "grp")
   expect_s3_class(res, "tbl")
+  expect_success(stop("this test is unfinished"))
 })
-
-pivot_grps(testb, rows = list(val = c("val_ok", "val_notok")))
 
 test_that("can ignore I groups", {
   res <- pivot_grps(testa, cols = "grp")
+  expect_success(stop("this test is unfinished"))
+})
+
+mtcars2 <- mtcars %>%
+  mutate(id = seq_along(mpg))
+
+test_that("can pivot groups for a bigger dataset", {
+  input <- group_by2(mtcars2, vs = NULL, id = NULL)
+  expect_equal(nrow(pivot_grps(input, cols = "vs")), 32)
+})
+
+test_that("pivot_grps throws when grouping does not uniquely identify all rows", {
+  expect_error(pivot_grps(mtcars, cols = "vs"), class = "error_bad_pivot")
 })

@@ -32,6 +32,7 @@ igroup_vars <- function (x) {
 #' @export
 group_by2 <- function (data, ...) {
   dots <- list2(...)
+  if(missing(data)) { abort("group_by2: missing argument `data`.", class="error_bad_argument") }
   if(length(dots) == 0) { return(ungroup(data)) }
   gvars <- syms(names(dots))
 
@@ -67,16 +68,6 @@ cast_grps <- function (groups, .x, .y) {
 
 to_miss <- function (x) {
   ifelse(x, "I", NA_character_)
-}
-
-
-# maps a function over an igroup
-igroup_map <- function(data, fn) {
-  if (!"igrouped_df" %in% class(data)) { stop("argument data must be an igrouped_df (igroup_map())") }
-  assert_that(is.function(fn), msg = "argument fn must be a function (igroup_map())")
-  
-  grps <- attr(data, "groups")
-  map2(grps$.rows, grps$I, ~ fn(data[.x,]))
 }
 
 expand_igrps <- function (x) {

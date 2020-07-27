@@ -1,5 +1,4 @@
 pivot_grps <- function (x, rows = NULL, cols = NULL) {
-  assert_that(!missing(x), msg = "missing argument x (pivot_grps)")
   if(is.null(rows) & is.null(cols)) { return(x) }
   if(is.null(rows)) {
     return(pivot_gc(x, cols))
@@ -12,8 +11,6 @@ pivot_grps <- function (x, rows = NULL, cols = NULL) {
   
 
 col_grps <- function (x, cols) {
-  assert_that(is.list(cols), msg = "argument cols must be a list of strings (col_grps)")
-  
   cbind(
     x[group_cols(data = x)],
     imap_dfr(cols, ~ make_col(x, .x, .y))
@@ -37,8 +34,6 @@ pivot_cg <- function (x, cols) {
 }
             
 grp_cols <- function (x) {
-  assert_that(is.data.frame(x), msg = "argument x must be dataframe (grp_cols)")
-
   grps <- attr(x, "groups")
   gnames <- names(grps[-length(grps)])
   dnames <- setdiff(names(x), gnames)

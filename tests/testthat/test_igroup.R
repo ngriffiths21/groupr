@@ -19,6 +19,18 @@ tsti_b <-
   ) %>%
   group_by2(grp = NULL, subgrp = "na")
 
+test_that("group_by2 throws if no data", {
+  expect_error(group_by2(), class="error_bad_argument")
+})
+
+test_that("group_by2 throws if groups aren't given I values", {
+  expect_true(FALSE)
+})
+
+test_that("group_by2 throws if groups are unavailable", {
+  expect_true(FALSE)
+})
+
 test_that("group_by2 can make multiple groups", {
   res <- group_by2(mtcars, vs = NULL, gear = NULL)
   expect_equal(length(groups(res)), 2)
