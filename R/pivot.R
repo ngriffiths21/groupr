@@ -27,6 +27,12 @@ make_col <- function (x, col, nm) {
 
 pivot_cg <- function (x, cols) {
   old_igrps <- igroup_vars(x)
+  not_found <- unlist(cols)[!unlist(cols) %in% names(x)]
+  if (length(not_found) != 0) {
+    abort(paste0("pivot_grps: could not find data columns requested in argument `rows`\n ✖ missing data columns: ",
+                 paste0(not_found, collapse = ", ")),
+          class = "error_miss_col")
+  }
   out <- dplyr::group_modify(
     x, ~ col_grps(., cols)
   )
@@ -52,6 +58,24 @@ grp_cols <- function (x) {
 
 pivot_gc <- function (x, cols) {
   old_igrps <- igroup_vars(x)
+  not_found <- cols[!cols %in% names(old_igrps)]
+  if (length(not_found) != 0) {
+    abort(paste0("pivot_grps: couldn't find the grouping variables requested by argument `cols`.",
+                 "\n✖ Missing grouping variables: ",
+                 paste0(not_found, collapse = ", ")),
+          class = "error_bad_arg")
+  }
+  
+  grp_rows <- group_data(x)$.rows
+  not_uniq <- any(map_lgl(grp_rows, ~ length(.) > 1))
+  if (not_uniq) {
+    abort(paste0("pivot_grps: could not pivot from groups to columns.",
+                 "\n✖ The grouping for `x` must uniquely identify rows.",
+                 "\n✖ Current grouping: ",
+                 paste0(names(old_igrps), collapse = ", ")),
+          class = "error_bad_pivot")
+  }
+
   grps <- old_igrps[!names(old_igrps) %in% cols]
   exp <- expand_igrps(group_by2(x, !!!grps))
 

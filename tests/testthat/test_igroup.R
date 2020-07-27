@@ -55,3 +55,10 @@ test_that("can expand an igrouped dataframe", {
   )
   expect_mapequal(res, cmp)
 })
+
+test_that("can expand a different igroup (?)", {
+  expect_true({
+    expand_igrps(group_by2(mtcars, vs = 1))
+    TRUE
+  })
+})

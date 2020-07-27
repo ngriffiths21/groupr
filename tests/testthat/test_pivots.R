@@ -27,6 +27,17 @@ testc <-
   ) %>%
   group_by2(grp = NULL, type = NULL, subgrp = "na")
 
+testd <-
+  tibble::tribble(
+    ~grp1, ~grp2, ~val,
+    1, 3, 0.3,
+    1, 2, 0.4,
+    1, 1, 0.5,
+    0, 3, 0.8,
+    0, 2, 0.9,
+    0, 1, 1.3
+  )
+
 test_that("can pivot group to column", {
   expect_equal(pivot_gc(testa, "ok"), testb)
 })
@@ -61,6 +72,16 @@ test_that("can pivot groups for a bigger dataset", {
   expect_equal(nrow(pivot_grps(input, cols = "vs")), 32)
 })
 
+test_that("pivot_grps throws when col isn't in the grouping", {
+  expect_error(pivot_grps(testd, cols = "grp"), class = "error_bad_arg")
+})
+
+test_that("pivot_grps throws when `row` refers to missing columns", {
+  expect_error(pivot_grps(testd, rows = list(new = "nonexistent")),
+               class = "error_miss_col")
+})
+
 test_that("pivot_grps throws when grouping does not uniquely identify all rows", {
-  expect_error(pivot_grps(mtcars, cols = "vs"), class = "error_bad_pivot")
+  testd_grp <- group_by2(testd, grp2 = NULL)
+  expect_error(pivot_grps(testd_grp, cols = "grp2"), class = "error_bad_pivot")
 })
