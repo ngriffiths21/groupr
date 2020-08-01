@@ -23,12 +23,9 @@ test_that("group_by2 throws if no data", {
   expect_error(group_by2(), class="error_bad_argument")
 })
 
-test_that("group_by2 throws if groups aren't given I values", {
-  expect_true(FALSE)
-})
-
 test_that("group_by2 throws if groups are unavailable", {
-  expect_true(FALSE)
+  expect_error(group_by2(mtcars, nonexistent = NULL),
+               class = "error_miss_col")
 })
 
 test_that("group_by2 can make multiple groups", {

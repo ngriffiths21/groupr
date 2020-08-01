@@ -17,6 +17,9 @@
 #' dataset (using group_by2) and specify which grouping variable should
 #' be consumed to produce a set of new columns.
 #'
+#' Both arguments can be passed in one call, in which case \code{rows} will be handled
+#' first, followed by \code{cols}.
+#'
 #' See the introduction vignette for more details and examples.
 #' 
 #' @param x A data frame
@@ -63,7 +66,7 @@ pivot_cg <- function (x, cols) {
   out <- dplyr::group_modify(
     x, ~ col_grps(., cols)
   )
-  group_by2(out, !!!old_igrps)
+  group_by2(out, !!!old_igrps, name = NULL)
 }
             
 grp_cols <- function (x) {

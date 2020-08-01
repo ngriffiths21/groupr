@@ -93,7 +93,7 @@ This is an example of an operation that is very challenging to write with standa
 
 ```{r}
 igrp_df <- group_by2(df, grp = NULL, subgrp = NA)
-#pivot_grps(igrp_df, cols = "grp")
+pivot_grps(igrp_df, cols = "grp")
 ```
 
 In this case we have a hierarchical grouping, where there are allowed to be multiple values for each value of `grp` but we may also have a single value that describes all the subgroups.
@@ -104,7 +104,7 @@ Note also how the only difference is in the grouping structure. The operation it
 
 It is common to have a calculation to apply to only a subset of the data. For example, if you have group A and group B, you may be interested in calculating a mean for group A but leaving it missing for all the rows in group B. Depending on the calculation, this can be tough to express.
 
-In mtcars, if we want the mean of `hp` for all rows where `vs == 1`, the easiest way is the following:
+In mtcars, if we want the mean of `hp` for all rows where `vs == 1`, the easiest way is something like the following:
 
 ```{r eval=FALSE}
 mtcars %>%
@@ -113,4 +113,3 @@ mtcars %>%
 ```
 
 Mutations are not currently provided in `groups` but will be added in the future.
-

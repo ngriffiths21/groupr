@@ -52,16 +52,23 @@ test_that("can pivot column to group", {
   expect_mapequal(obj, testa)
 })
 
+testres <- tibble(
+  name = c("val_notok", "val_ok"),
+  val_1 = c(NA, 1.9),
+  val_2 = c(4.9, 3.1)
+) %>%
+  group_by2(name = NULL)
+
 test_that("can pivot both ways", {
   res <- pivot_grps(testb, rows = list(val = c("val_ok", "val_notok")),
                cols = "grp")
   expect_s3_class(res, "tbl")
-  expect_success(stop("this test is unfinished"))
+  expect_mapequal(res, testres)
 })
 
 test_that("can ignore I groups", {
-  res <- pivot_grps(testa, cols = "grp")
-  expect_success(stop("this test is unfinished"))
+  res <- pivot_grps(testc, cols = "type")
+  expect_equal(res$val_main, c(NA, NA, 4, 4))
 })
 
 mtcars2 <- mtcars %>%

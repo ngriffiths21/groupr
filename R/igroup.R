@@ -33,6 +33,14 @@ igroup_vars <- function (x) {
 group_by2 <- function (data, ...) {
   dots <- list2(...)
   if(missing(data)) { abort("group_by2: missing argument `data`.", class="error_bad_argument") }
+  not_found <- names(dots)[!names(dots) %in% names(data)]
+  if(length(not_found) != 0) {
+    abort(paste0("group_by2: must group by variables found in `data`.\n",
+                 "✖ Could not find columns: ",
+                 paste0(not_found, collapse = ", ")),
+          class = "error_miss_col")
+  }
+
   if(length(dots) == 0) { return(ungroup(data)) }
   gvars <- syms(names(dots))
 
@@ -97,6 +105,9 @@ expand_item <- function (data, grow) {
 }
 
 same_group <- function(data, grps) {
+  if(length(grps) == 0) {
+    return(rep_along(data[[1]], TRUE))
+  }
   reduce(imap(grps, ~ data[[.y]] == field(.x, "x")), `&`)
 }
 

@@ -35,5 +35,8 @@ To pivot a row grouping to a column grouping, pass a grouped
 dataset (using group_by2) and specify which grouping variable should
 be consumed to produce a set of new columns.
 
+Both arguments can be passed in one call, in which case \code{rows} will be handled
+first, followed by \code{cols}.
+
 See the introduction vignette for more details and examples.
 }
