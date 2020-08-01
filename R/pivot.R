@@ -117,7 +117,7 @@ pivot_gc <- function (x, cols) {
 
 slice_cbind <- function (x, rows) {
   map(rows, ~ dplyr::slice(x, .)) %>%
-    reduce(dplyr::bind_cols)
+    reduce(~ suppressMessages(dplyr::bind_cols(.x, .y)))
 }
 
 names_fr_groups <- function (x) {

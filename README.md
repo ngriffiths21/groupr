@@ -45,21 +45,79 @@ Install:
 devtools::install_github("ngriffiths21/groups")
 ```
 
-Group a tibble:
+Group and mark inapplicables:
 
 ``` r
 library(groups)
-igrped_df <- group_by2(mtcars, gear = 5, vs = NULL)
+igrped_df <- group_by2(iris, Species = "setosa")
 dplyr::group_data(igrped_df)
-#> # A tibble: 6 x 3
-#>         gear         vs       .rows
-#>   <polymiss> <polymiss> <list<int>>
-#> 1          3          0        [12]
-#> 2          3          1         [3]
-#> 3          4          0         [2]
-#> 4          4          1        [10]
-#> 5        <I>          0         [4]
-#> 6        <I>          1         [1]
+#> # A tibble: 3 x 2
+#>      Species       .rows
+#>   <polymiss> <list<int>>
+#> 1        <I>        [50]
+#> 2 versicolor        [50]
+#> 3  virginica        [50]
+```
+
+Make row groups out of columns (pivot longer):
+
+``` r
+p_df <- group_by2(iris, Species = NULL)
+pivot_grps(p_df, rows = list(value = c("Sepal.Length", "Sepal.Width")))
+#> # A tibble: 300 x 3
+#> # Groups:   Species, name [6]
+#>    Species name         value
+#>    <fct>   <chr>        <dbl>
+#>  1 setosa  Sepal.Length   5.1
+#>  2 setosa  Sepal.Length   4.9
+#>  3 setosa  Sepal.Length   4.7
+#>  4 setosa  Sepal.Length   4.6
+#>  5 setosa  Sepal.Length   5  
+#>  6 setosa  Sepal.Length   5.4
+#>  7 setosa  Sepal.Length   4.6
+#>  8 setosa  Sepal.Length   5  
+#>  9 setosa  Sepal.Length   4.4
+#> 10 setosa  Sepal.Length   4.9
+#> # … with 290 more rows
+```
+
+Make columns out of row groups:
+
+``` r
+p_df2
+#> # A tibble: 5 x 3
+#> # Groups:   grp1, grp2 [5]
+#>   grp1   grp2   val
+#>   <chr> <dbl> <dbl>
+#> 1 A         1   1.9
+#> 2 A         2  10.1
+#> 3 B         2   3.1
+#> 4 B         1   4.7
+#> 5 C         2   4.9
+
+pivot_grps(p_df2, cols = "grp2")
+#> # A tibble: 3 x 3
+#> # Groups:   grp1 [3]
+#>   grp1  val_1 val_2
+#>   <chr> <dbl> <dbl>
+#> 1 A       1.9  10.1
+#> 2 B       4.7   3.1
+#> 3 C      NA     4.9
+```
+
+Both operations in one call:
+
+``` r
+p_df3 <- pivot_grps(p_df2, cols = "grp2")
+
+pivot_grps(p_df3, rows = list(val = c("val_1", "val_2")),
+           cols = "grp1")
+#> # A tibble: 2 x 4
+#> # Groups:   name [2]
+#>   name  val_A val_B val_C
+#>   <chr> <dbl> <dbl> <dbl>
+#> 1 val_1   1.9   4.7  NA  
+#> 2 val_2  10.1   3.1   4.9
 ```
 
 ## Lifecycle
