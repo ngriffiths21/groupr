@@ -1,0 +1,116 @@
+---
+title: "Introduction to groups"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The groups package is designed to make certain forms of data manipulation easier by representing the underlying data in slightly richer ways. In particular, the standard grouping function `dplyr::group_by` is extended to include groups that can be marked "inapplicable" at certain values of the grouping variable. The hope is that code that can recognize these kinds of groups will be simpler to write and easier to understand. The package also provides functions for some tasks, like pivoting, that are especially well suited to this idea.
+
+## The meaning of inapplicable groups
+
+In dplyr, groups are denoted with a grouping column that contains unique values for every group. For example, we can group `mtcars` by the variable `vs`:
+
+```{r}
+library(dplyr)
+group_by(mtcars, vs)
+```
+
+The result is a dataset with two groups defined by `vs == 1` and `vs == 0`.
+
+In `groups`, we can optionally mark one of the two groups as inapplicable:
+
+```{r echo=FALSE}
+library(groups)
+group_by2(mtcars, vs = 1) # sets the group vs==1 to inapplicable
+```
+
+What this means depends on what comes next. Here are a few possibilities:
+
+- The data can be ignored for now, but we might need it later
+- The data describe a higher level in a grouping hierarchy, so they don't need a subgroup value
+- The data should be excluded from the input of a calculation
+
+These different meanings will be clear in the context of actual data cleaning operations.
+
+## Data cleaning and representation
+
+### Pivoting
+
+#### As an operation on groups
+
+Pivoting can be thought of as a simple rearrangement of groups. Consider the iris dataset:
+
+```{r}
+as_tibble(iris)
+```
+
+We could pivot to "longer" format by collapsing the different measurements into a single column. Equivalently, we can consider the columns `Seal.Length, Sepal.Width, ...` to describe groups of data, not distinct variables. In other words, the four columns together form one collection of data, and each column is a subgroup of that collection.
+
+To pivot, we transfer this "column grouping" to the standard dplyr "row grouping." To do this we just take our groups out of the different columns and merge them into one. The result is a consolidated column of data (`value`), along with a standard (row) grouping variable (`name`).
+
+```{r}
+iris2 <- group_by2(iris, Species = NULL) # describe row groups
+
+pivot_grps(iris2, rows = list(value = c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")))
+```
+
+So, pivoting to longer is the same as converting column groupings to row groupings, and pivoting to wider just does the inverse.
+
+#### Inapplicable group pivoting
+
+Consider this example dataset:
+
+```{r}
+df <- tibble(
+  grp = c(1, 1, 1, 1, 2),
+  subgrp = c(1, 2, 3, 4, NA),
+  val = c(3.1, 2.8, 4.0, 3.8, 10.2)
+)
+
+df
+```
+
+Imagine we want to convert the row grouping defined by `grp` into a column grouping. Without inapplicable groups we get this:
+
+```{r}
+regular_df <- group_by2(df, grp = NULL, subgrp = NULL)
+pivot_grps(regular_df, cols = "grp")
+```
+
+It looks a bit off. What if we wanted `val_2 == 10.2` for all values of subgrp? In other words, what if `val = 10.2` describes the entire second group?
+
+This is an example of an operation that is very challenging to write with standard pivoting functions, but trivial with inapplicable groups. Simply group like this before pivoting:
+
+```{r}
+igrp_df <- group_by2(df, grp = NULL, subgrp = NA)
+#pivot_grps(igrp_df, cols = "grp")
+```
+
+In this case we have a hierarchical grouping, where there are allowed to be multiple values for each value of `grp` but we may also have a single value that describes all the subgroups.
+
+Note also how the only difference is in the grouping structure. The operation itself remains concise and easy to understand.
+
+### Selecting data for computation
+
+It is common to have a calculation to apply to only a subset of the data. For example, if you have group A and group B, you may be interested in calculating a mean for group A but leaving it missing for all the rows in group B. Depending on the calculation, this can be tough to express.
+
+In mtcars, if we want the mean of `hp` for all rows where `vs == 1`, the easiest way is the following:
+
+```{r eval=FALSE}
+mtcars %>%
+  group_by2(vs = 0) %>%
+  mutate(hp_mean_vs1 = mean(hp))
+```
+
+Mutations are not currently provided in `groups` but will be added in the future.
+

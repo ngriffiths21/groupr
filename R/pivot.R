@@ -1,3 +1,30 @@
+#' Pivot with Inapplicable Groups
+#'
+#' Pivot a dataset by defining the way the current grouping
+#' will be transformed into a new one. A pivot to wider consumes
+#' a row grouping (created by group_by2) and produces a new
+#' set of columns. A pivot to longer consumes a column grouping
+#' and produces a new row grouping.
+#' 
+#' To pivot a column grouping to a row grouping, pass the specification of the
+#' new row grouping using the \code{cols} argument. The format is \code{list(values_col =
+#' "oldcol_1", "oldcol_2", ...)}. This will take all the data from the old columns,
+#' combine them into a new column \code{values_col}, and automatically provide
+#' a grouping variable, which will be called \code{name}. The values of \code{name}
+#' will be the corresponding names of the old columns.
+#'
+#' To pivot a row grouping to a column grouping, pass a grouped
+#' dataset (using group_by2) and specify which grouping variable should
+#' be consumed to produce a set of new columns.
+#'
+#' See the introduction vignette for more details and examples.
+#' 
+#' @param x A data frame
+#' @param rows A list of character vectors, defining the new row grouping
+#' @param cols A character vector, defining the new columns
+#' @return A pivoted data frame with the new grouping
+#' 
+#' @export
 pivot_grps <- function (x, rows = NULL, cols = NULL) {
   if(is.null(rows) & is.null(cols)) { return(x) }
   if(is.null(rows)) {
