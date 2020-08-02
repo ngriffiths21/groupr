@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+![R-CMD-check](https://github.com/ngriffiths21/groups/workflows/R-CMD-check/badge.svg)
+
 <!-- badges: end -->
 
 The groups package provides a more powerful version of grouped tibbles
