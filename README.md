@@ -50,6 +50,7 @@ Group and mark inapplicables:
 ``` r
 library(groups)
 igrped_df <- group_by2(iris, Species = "setosa")
+
 dplyr::group_data(igrped_df)
 #> # A tibble: 3 x 2
 #>      Species       .rows
@@ -63,6 +64,7 @@ Make row groups out of columns (pivot longer):
 
 ``` r
 p_df <- group_by2(iris, Species = NULL)
+
 pivot_grps(p_df, rows = list(value = c("Sepal.Length", "Sepal.Width")))
 #> # A tibble: 300 x 3
 #> # Groups:   Species, name [6]
@@ -86,38 +88,43 @@ Make columns out of row groups:
 ``` r
 p_df2
 #> # A tibble: 5 x 3
-#> # Groups:   grp1, grp2 [5]
 #>   grp1   grp2   val
 #>   <chr> <dbl> <dbl>
 #> 1 A         1   1.9
 #> 2 A         2  10.1
 #> 3 B         2   3.1
 #> 4 B         1   4.7
-#> 5 C         2   4.9
+#> 5 C        NA   4.9
 
-pivot_grps(p_df2, cols = "grp2")
-#> # A tibble: 3 x 3
-#> # Groups:   grp1 [3]
-#>   grp1  val_1 val_2
-#>   <chr> <dbl> <dbl>
-#> 1 A       1.9  10.1
-#> 2 B       4.7   3.1
-#> 3 C      NA     4.9
+# group and make the NA an inapplicable grouping
+p_df2 <- group_by2(p_df2, grp1 = NULL, grp2 = NA)
+
+pivot_grps(p_df2, cols = "grp1")
+#> # A tibble: 2 x 4
+#> # Groups:   grp2 [2]
+#>    grp2 val_A val_B val_C
+#>   <dbl> <dbl> <dbl> <dbl>
+#> 1     1   1.9   4.7   4.9
+#> 2     2  10.1   3.1   4.9
 ```
 
-Both operations in one call:
+Note that with this inapplicable grouping, the value from the “C” group
+is applied to both subgroups.
+
+Pivot both rows and columns:
 
 ``` r
-p_df3 <- pivot_grps(p_df2, cols = "grp2")
+p_df3 <- pivot_grps(p_df2, cols = "grp1")
 
-pivot_grps(p_df3, rows = list(val = c("val_1", "val_2")),
-           cols = "grp1")
-#> # A tibble: 2 x 4
-#> # Groups:   name [2]
-#>   name  val_A val_B val_C
-#>   <chr> <dbl> <dbl> <dbl>
-#> 1 val_1   1.9   4.7  NA  
-#> 2 val_2  10.1   3.1   4.9
+pivot_grps(p_df3, rows = list(val = c("val_A", "val_B", "val_C")),
+           cols = "grp2")
+#> # A tibble: 3 x 3
+#> # Groups:   name [3]
+#>   name  val_1 val_2
+#>   <chr> <dbl> <dbl>
+#> 1 val_A   1.9  10.1
+#> 2 val_B   4.7   3.1
+#> 3 val_C   4.9   4.9
 ```
 
 ## Lifecycle

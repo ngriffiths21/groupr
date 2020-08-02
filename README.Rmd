@@ -45,6 +45,7 @@ Group and mark inapplicables:
 ```{r}
 library(groups)
 igrped_df <- group_by2(iris, Species = "setosa")
+
 dplyr::group_data(igrped_df)
 ```
 
@@ -52,6 +53,7 @@ Make row groups out of columns (pivot longer):
 
 ```{r}
 p_df <- group_by2(iris, Species = NULL)
+
 pivot_grps(p_df, rows = list(value = c("Sepal.Length", "Sepal.Width")))
 ```
 
@@ -64,25 +66,28 @@ p_df2 <- tibble::tribble(
   "A", 2, 10.1,
   "B", 2, 3.1,
   "B", 1, 4.7,
-  "C", 2, 4.9
+  "C", NA, 4.9
 )
-
-p_df2 <- group_by2(p_df2, grp1 = NULL, grp2 = NULL)
 ```
 
 ```{r}
 p_df2
 
-pivot_grps(p_df2, cols = "grp2")
+# group and make the NA an inapplicable grouping
+p_df2 <- group_by2(p_df2, grp1 = NULL, grp2 = NA)
+
+pivot_grps(p_df2, cols = "grp1")
 ```
 
-Both operations in one call:
+Note that with this inapplicable grouping, the value from the "C" group is applied to both subgroups.
+
+Pivot both rows and columns:
 
 ```{r}
-p_df3 <- pivot_grps(p_df2, cols = "grp2")
+p_df3 <- pivot_grps(p_df2, cols = "grp1")
 
-pivot_grps(p_df3, rows = list(val = c("val_1", "val_2")),
-           cols = "grp1")
+pivot_grps(p_df3, rows = list(val = c("val_A", "val_B", "val_C")),
+           cols = "grp2")
 ```
 
 ## Lifecycle
