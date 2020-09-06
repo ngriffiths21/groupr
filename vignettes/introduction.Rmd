@@ -1,8 +1,8 @@
 ---
-title: "Introduction to groups"
+title: "Introduction to groupr"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction}
+  %\VignetteIndexEntry{Introduction to groupr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-The groups package is designed to make certain forms of data manipulation easier by representing the underlying data in slightly richer ways. In particular, the standard grouping function `dplyr::group_by` is extended to include groups that can be marked "inapplicable" at certain values of the grouping variable. The hope is that code that can recognize these kinds of groups will be simpler to write and easier to understand. The package also provides functions for some tasks, like pivoting, that are especially well suited to this idea.
+The groupr package is designed to make certain forms of data manipulation easier by representing the underlying data in slightly richer ways. In particular, the standard grouping function `dplyr::group_by` is extended to include groups that can be marked "inapplicable" at certain values of the grouping variable. The hope is that code that can recognize these kinds of groups will be simpler to write and easier to understand. The package also provides functions for some tasks, like pivoting, that are especially well suited to this idea.
 
 ## The meaning of inapplicable groups
 
@@ -30,7 +30,7 @@ The result is a dataset with two groups defined by `vs == 1` and `vs == 0`.
 In `groups`, we can optionally mark one of the two groups as inapplicable:
 
 ```{r echo=FALSE}
-library(groups)
+library(groupr)
 group_by2(mtcars, vs = 1) # sets the group vs==1 to inapplicable
 ```
 

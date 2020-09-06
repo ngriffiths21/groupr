@@ -1,15 +1,15 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# groups
+# groupr
 
 <!-- badges: start -->
 
-![R-CMD-check](https://github.com/ngriffiths21/groups/workflows/R-CMD-check/badge.svg)
+![R-CMD-check](https://github.com/ngriffiths21/groupr/workflows/R-CMD-check/badge.svg)
 
 <!-- badges: end -->
 
-The groups package is designed to work with tibbles and dplyr. It
+The groupr package is designed to work with tibbles and dplyr. It
 provides replacements for tidyverse grouping and pivoting operations,
 and uses richer data structures to make these operations easier to think
 about.
@@ -46,13 +46,15 @@ straightforward way.
 ### Install
 
 ``` r
-devtools::install_github("ngriffiths21/groups")
+devtools::install_github("ngriffiths21/groupr")
 ```
 
 ### Easier pivots using groups
 
 ``` r
-library(groups)
+library(groupr)
+#> Warning: replacing previous import 'dplyr::data_frame' by 'vctrs::data_frame'
+#> when loading 'groupr'
 library(dplyr, warn.conflicts = FALSE)
 library(tidyr)
 ```
@@ -189,9 +191,8 @@ pivot_wider(
 
 ## Lifecycle
 
-This package is currently experimental. At this point it has only
-undergone limited testing and it is not optimized for performance. The
-API is likely to change.
+At this point this is experimental, with limited testing. The API is
+likely to change.
 
 ## License
 
