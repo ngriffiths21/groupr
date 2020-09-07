@@ -26,12 +26,17 @@ igroup_vars <- function (x) {
 #' values will be marked inapplicable.
 #'
 #' @param data A tibble to group
-#' @param ... Arguments of the form \code{name = c(inapplicableval1, ...)}
+#' @param ... Arguments of the form \code{var = c(val1, val2)} or the name of a variable
 #' @return An igrouped tibble
 #'
 #' @export
 group_by2 <- function (data, ...) {
-  dots <- list2(...)
+  UseMethod("group_by2")
+}
+
+#' @export
+group_by2.data.frame <- function (data, ...) {
+  dots <- parse_grp_dots(...)
   if(missing(data)) { abort("group_by2: missing argument `data`.", class="error_bad_argument") }
   not_found <- names(dots)[!names(dots) %in% names(data)]
   if(length(not_found) != 0) {
@@ -41,16 +46,42 @@ group_by2 <- function (data, ...) {
           class = "error_miss_col")
   }
 
+  group_by2_ok(data, dots)
+}
+
+group_by2_ok <- function (data, dots) {
   if(length(dots) == 0) { return(ungroup(data)) }
   gvars <- syms(names(dots))
-
+  
   grouped <- dplyr::group_by(data, !!!gvars)
   groups <- attr(grouped, "groups")
-
+  
   groups_out <- imap_dfc(dots, ~ cast_grps(groups, .x, .y)) %>%
-    bind_cols(groups[".rows"])
-
+    vec_cbind(groups[".rows"])
+  
   igrouped_df(grouped, groups_out)
+}
+
+parse_grp_dots <- function (...) {
+  dots <- enexprs(...)
+  if (length(dots) == 0) { return(list()) }
+  flatten(map(1:length(dots), dot_to_arg, dots))
+}
+
+#' Parse an argument to group_by2
+#' 
+#' The param (dots[i]) should be either a named vector, which creates an inapplicable group,
+#' or a symbol making a full group. All other values are errors.
+#' 
+dot_to_arg <- function (i, dots) {
+  curr <- dots[i]
+  if(is.symbol(curr[[1]])) {
+    return(setNames(list(NULL), rlang::as_name(curr[[1]])))
+  } else if (length(names(curr)) != 0 && names(curr) != "") {
+    return(curr)
+  } else {
+    stop("could not parse argument to group_by2")
+  }
 }
 
 #' Ungroup a tibble with inapplicable groups
@@ -78,23 +109,33 @@ to_miss <- function (x) {
   ifelse(x, "I", NA_character_)
 }
 
+#' Add rows to capture each grouping
+#' 
+#' Expansion is turning a hierarchical grouping with I-values into a flat one
+#' without I-values.
 expand_igrps <- function (x) {
-  old_igrps <- igroup_vars(x)
   inap_grps <- inap_selector(group_data(x))
   if (sum(inap_grps) == 0) { return(x) }
 
-  inaps <- group_data(x)[inap_grps,]
-  apps <- group_data(x)[!inap_grps,]
+  exp_inaps <- expand_inap_grps(x, group_data(x)[inap_grps,])
+  app_data <- x[applicable_row_nos(group_data(x)),]
   
-  exp_inaps <- map_dfr(1:nrow(inaps), 
-                       ~ expand_item(x, as.list(inaps[.,])))
-
-  app_data <- map_dfr(apps$.rows, ~ x[.,])
   group_by2(vec_rbind(app_data, exp_inaps),
-            !!!old_igrps)
+            !!!igroup_vars(x))
 }
 
-expand_item <- function (data, grow) {
+applicable_row_nos <- function (agrps) {
+  unlist(
+    agrps[!inap_selector(agrps),]$.rows
+  )
+}
+
+expand_inap_grps <- function (x, inaps) {
+  map_dfr(1:nrow(inaps),
+          ~ expand_inap_row(x, as.list(inaps[.,])))
+}
+
+expand_inap_row <- function (data, grow) {
   grow <- grow[-length(grow)]
   selectors <- grow[!map_lgl(grow, inapplicable)]
 
@@ -102,6 +143,36 @@ expand_item <- function (data, grow) {
   ivars <- igroup_vars(out)
   newgrps <- ivars[map_lgl(ivars, ~ length(.) > 0)]
   expand_igrp(group_by2(out, !!!newgrps))
+}
+
+#' Expand a df with one inapplicable grouping
+#' 
+#' @param x df, that can only have exactly one grouping variable
+#' @return A df with only the changed (formerly inapplicable) rows
+expand_igrp <- function (x) {
+  if(length(group_vars(x)) > 1) {
+    stop("argument x has multiple groups, and cannot tell which is inapplicable (expand_igrps)")
+  }
+
+  Idata <- x[-applicable_row_nos(group_data(x)),]
+
+  if (nrow(Idata) == nrow(x)) { return(x) }
+
+  fill_irow(Idata)
+}
+
+fill_irow <- function (Idata) {
+  nonIvals <- drop_inap_firstcol(group_data(Idata))
+  expanded <- vec_cbind(nonIvals, tibble(data = list(Idata[!names(Idata) %in% names(nonIvals)])))
+  
+  sel_plm <- map_lgl(expanded, ~ "polymiss" %in% class(.))
+  expanded[sel_plm] <- map_df(expanded[sel_plm], ~ field(., "x"))
+  
+  tidyr::unnest(expanded, cols = .data$data)
+}
+
+drop_inap_firstcol <- function (x) {
+  x[!inapplicable(x[[1]]),1]
 }
 
 same_group <- function(data, grps) {
@@ -123,31 +194,6 @@ inap_selector <- function (x) {
     map_lgl(~ reduce(., `|`))
 }
 
-
-expand_igrp <- function (x) {
-  if(length(group_vars(x)) > 1) {
-    stop("argument x has multiple groups, and cannot tell which is inapplicable (expand_igrps)")
-  }
-
-  I <- inapplicable(group_data(x)[[1]])
-
-  Idata <- x[group_data(x)[I,]$.rows[[1]],]
-  nonIdata <- x[-group_data(x)[I,]$.rows[[1]],]
-
-  if (nrow(nonIdata) == 0) { return(x) }
-
-  nonI <- group_data(x)[!I,]
-  
-  nonIvals <- nonI[!names(nonI) %in% c(".rows")]
-
-  expanded <- bind_cols(nonIvals, tibble(data = list(Idata[!names(Idata) %in% names(nonIvals)])))
-
-  sel_plm <- map_lgl(expanded, ~ "polymiss" %in% class(.))
-  expanded[sel_plm] <- map_df(expanded[sel_plm], ~ field(., "x"))
-
-  tidyr::unnest(expanded, cols = .data$data)
-}
-
 #' @export
 group_data.igrouped_df <- function (.data) {
   attr(.data, "groups")
@@ -158,9 +204,15 @@ group_vars.igrouped_df <- function (x) {
   setdiff(names(dplyr::group_data(x)), c(".rows", "I"))
 }
 
+#' @importFrom dplyr tbl_sum
 #' @export
 tbl_sum.igrouped_df <- function (x) {
   grps <- dplyr::n_groups(x)
-  group_sum <- paste0(paste0(dplyr::group_vars(x), collapse = ", "), " [", formatC(grps, big.mark = ","), "]")
+  group_sum <- paste0(paste0(format_igrps(igroup_vars(x)), collapse = ", "), " [", formatC(grps, big.mark = ","), "]")
   c(NextMethod(), c(Groups = group_sum))
+}
+
+format_igrps <- function (igrps) {
+  formatted <- map_chr(format(igrps), ~ ifelse(. == "", "", paste0(" (I: ", ., ")")))
+  paste0(names(igrps), formatted)
 }

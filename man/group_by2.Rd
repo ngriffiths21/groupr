@@ -9,7 +9,7 @@ group_by2(data, ...)
 \arguments{
 \item{data}{A tibble to group}
 
-\item{...}{Arguments of the form \code{name = c(inapplicableval1, ...)}}
+\item{...}{Arguments of the form \code{var = c(val1, val2)} or the name of a variable}
 }
 \value{
 An igrouped tibble
