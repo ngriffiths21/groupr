@@ -69,21 +69,20 @@ pivot_cg <- function (x, cols) {
   group_by2(out, !!!old_igrps, name = NULL)
 }
             
-grp_cols <- function (x) {
+grp_cols <- function (x, spec) {
   grps <- attr(x, "groups")
   gnames <- names(grps[-length(grps)])
   dnames <- setdiff(names(x), gnames)
   grows <- grps[[".rows"]]
 
-  out <- slice_cbind(dplyr::ungroup(x[dnames]), grows)
+  sliced <- map(grows, ~ vec_slice(dplyr::ungroup(x[dnames]), .x)) %>% 
+    transpose()
   
-  newnames <- cross2_str(
-   dnames,
-    names_fr_groups(grps[gnames])
+  newnames <- dplyr::inner_join(spec, grps[gnames], by = gnames)$.cols
+  
+  as_tibble(
+    map(sliced, ~ as_tibble(setNames(., newnames)))
   )
-
-  names(out) <- newnames
-  out
 }
 
 pivot_gc <- function (x, cols) {
@@ -108,16 +107,33 @@ pivot_gc <- function (x, cols) {
 
   grps <- old_igrps[!names(old_igrps) %in% cols]
   exp <- expand_igrps(group_by2(x, !!!grps))
+  
+  grp_dat <- group_data(dplyr::group_by(exp, !!!syms(cols)))
+  spec <- grp_dat[-length(grp_dat)]
+  spec$.cols <- reduce(spec, ~ rlang::syms(paste0(.x, "_", .y)))
 
-  exp %>%
+  out <-
+    exp %>%
     group_by(!!!syms(group_vars(exp))) %>%
-    dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(cols)))) %>%
+    dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(cols)),
+                                   spec)) %>%
     group_by2(!!!grps)
+  attr(out, "colgroups") <- spec
+  out
 }
 
+
+tibble(
+  grp = c(1, 2, 2),
+  type = c("sub", "main", "sub"),
+  .cols = syms(list("1_sub", "2_main", "2_sub"))
+)
+
 slice_cbind <- function (x, rows) {
-  map(rows, ~ dplyr::slice(x, .)) %>%
+  res <-
+    map(rows, ~ dplyr::slice(x, .)) %>%
     reduce(~ suppressMessages(dplyr::bind_cols(.x, .y)))
+  res
 }
 
 names_fr_groups <- function (x) {

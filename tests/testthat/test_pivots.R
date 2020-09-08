@@ -8,6 +8,16 @@ testa <- tibble::tribble(
 ) %>%
   group_by2(ok, grp)
 
+testb2 <-
+  tibble(
+    grp = c(1, 2),
+    val = tibble(
+      ok = c(1.9, 3.1),
+      notok = c(NA, 4.9)
+    )
+  ) %>%
+  group_by2(grp)
+
 testb <-
   tibble::tribble(
     ~grp, ~val_ok, ~val_notok,
@@ -39,7 +49,7 @@ testd <-
   )
 
 test_that("can pivot group to column", {
-  expect_equal(pivot_gc(testa, "ok"), testb)
+  expect_equal(pivot_gc(testa, "ok")$val, testb2$val)
 })
 
 test_that("can pivot column to group", {
