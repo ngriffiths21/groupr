@@ -40,33 +40,40 @@ pivot_grps <- function (x, rows = NULL, cols = NULL) {
 }
   
 
-col_grps <- function (x, cols) {
+col_grps <- function (x, col) {
+  cgrps <- attr(x, "colgroups")
+  
   cbind(
     x[group_cols(data = x)],
-    imap_dfr(cols, ~ make_col(x, .x, .y))
+    make_cols(x, cgrps[[col]], col)
   )
 }
 
-make_col <- function (x, col, nm) {
+make_cols <- function (x, col, nm) {
+  map_dfc(names(x[-group_cols(data = x)]),
+          ~ make_col(x, col, nm, .))
+}
+
+make_col <- function (x, col, nm, datacol) {
   map(col, ~ tibble::tibble(
-    name = rep_along(x[[.]], .),
-    !!nm := x[[.]]
+    !!nm := rep_along(x[[datacol]][[.]], .),
+    !!datacol := x[[datacol]][[.]]
   )) %>%
     reduce(vctrs::vec_rbind)
 }
 
 pivot_cg <- function (x, cols) {
   old_igrps <- igroup_vars(x)
-  not_found <- unlist(cols)[!unlist(cols) %in% names(x)]
-  if (length(not_found) != 0) {
-    abort(paste0("pivot_grps: could not find data columns requested in argument `rows`\n ✖ missing data columns: ",
-                 paste0(not_found, collapse = ", ")),
-          class = "error_miss_col")
-  }
+  # not_found <- unlist(cols)[!unlist(cols) %in% names(x)]
+  # if (length(not_found) != 0) {
+  #   abort(paste0("pivot_grps: could not find data columns requested in argument `rows`\n ✖ missing data columns: ",
+  #                paste0(not_found, collapse = ", ")),
+  #         class = "error_miss_col")
+  # }
   out <- dplyr::group_modify(
     x, ~ col_grps(., cols)
   )
-  group_by2(out, !!!old_igrps, name = NULL)
+  group_by2(out, !!!old_igrps, !!rlang::sym(cols))
 }
             
 grp_cols <- function (x, spec) {
@@ -108,9 +115,13 @@ pivot_gc <- function (x, cols) {
   grps <- old_igrps[!names(old_igrps) %in% cols]
   exp <- expand_igrps(group_by2(x, !!!grps))
   
+  # dplyr::group_by avoids polymiss vectors
   grp_dat <- group_data(dplyr::group_by(exp, !!!syms(cols)))
+  attr(grp_dat, ".drop") <- NULL
+  
   spec <- grp_dat[-length(grp_dat)]
-  spec$.cols <- reduce(spec, ~ rlang::syms(paste0(.x, "_", .y)))
+  spec$.cols <- reduce(spec, ~ paste0(.x, "_", .y))
+  spec$.cols <- rlang::syms(as.character(spec$.cols))
 
   out <-
     exp %>%
@@ -121,13 +132,6 @@ pivot_gc <- function (x, cols) {
   attr(out, "colgroups") <- spec
   out
 }
-
-
-tibble(
-  grp = c(1, 2, 2),
-  type = c("sub", "main", "sub"),
-  .cols = syms(list("1_sub", "2_main", "2_sub"))
-)
 
 slice_cbind <- function (x, rows) {
   res <-
