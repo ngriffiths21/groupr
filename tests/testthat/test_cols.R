@@ -6,7 +6,7 @@ tstc_a <- tibble(
   val2 = c(20,21,22)
 )
 
-test_that("can create col groupings", {
-  res <- def_grp_cols(tstc_a, "val", "which", val1 = val1, val2 = val2)
-  expect_equal(names(res), c("grp", "val"))
+
+test_that("can create colgroups with spec_colgrp()", {
+  expect_true(FALSE)
 })

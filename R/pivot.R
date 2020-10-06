@@ -62,18 +62,18 @@ make_col <- function (x, col, nm, datacol) {
     reduce(vctrs::vec_rbind)
 }
 
-pivot_cg <- function (x, cols) {
+pivot_cg <- function (x, rows) {
   old_igrps <- igroup_vars(x)
-  # not_found <- unlist(cols)[!unlist(cols) %in% names(x)]
+  # not_found <- unlist(rows)[!unlist(cols) %in% names(x)]
   # if (length(not_found) != 0) {
   #   abort(paste0("pivot_grps: could not find data columns requested in argument `rows`\n ✖ missing data columns: ",
   #                paste0(not_found, collapse = ", ")),
   #         class = "error_miss_col")
   # }
   out <- dplyr::group_modify(
-    x, ~ col_grps(., cols)
+    x, ~ col_grps(., rows)
   )
-  group_by2(out, !!!old_igrps, !!rlang::sym(cols))
+  group_by2(out, !!!old_igrps, !!rlang::sym(rows))
 }
             
 grp_cols <- function (x, spec) {
@@ -86,9 +86,10 @@ grp_cols <- function (x, spec) {
     transpose()
   
   newnames <- dplyr::inner_join(spec, grps[gnames], by = gnames)$.cols
+  charnames <- map(newnames, as.character)
   
   as_tibble(
-    map(sliced, ~ as_tibble(setNames(., newnames)))
+    map(sliced, ~ as_tibble(setNames(., charnames)))
   )
 }
 

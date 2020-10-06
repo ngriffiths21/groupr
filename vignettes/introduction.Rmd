@@ -59,9 +59,12 @@ We could pivot to "longer" format by collapsing the different measurements into 
 To pivot, we transfer this "column grouping" to the standard dplyr "row grouping." To do this we just take our groups out of the different columns and merge them into one. The result is a consolidated column of data (`value`), along with a standard (row) grouping variable (`name`).
 
 ```{r}
-iris2 <- group_by2(iris, Species = NULL) # describe row groups
+iris2 <- group_by2(iris, Species) %>% 
+  def_grp_cols("value", "type", slength = Sepal.Length,
+               swidth = Sepal.Width, plength = Petal.Length,
+               pwidth = Petal.Width)
 
-pivot_grps(iris2, rows = list(value = c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")))
+pivot_grps(iris2, rows = "type")
 ```
 
 So, pivoting to longer is the same as converting column groupings to row groupings, and pivoting to wider just does the inverse.

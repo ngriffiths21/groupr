@@ -209,7 +209,13 @@ group_vars.igrouped_df <- function (x) {
 tbl_sum.igrouped_df <- function (x) {
   grps <- dplyr::n_groups(x)
   group_sum <- paste0(paste0(format_igrps(igroup_vars(x)), collapse = ", "), " [", formatC(grps, big.mark = ","), "]")
-  c(NextMethod(), c(Groups = group_sum))
+  out <- c(`Row indices` = group_sum)
+  
+  if ("colgroups" %in% names(attributes(x))) {
+    out <- c(out, `Col index` = setdiff(names(attr(x, "colgroups")), ".cols"))
+  }
+  
+  c(NextMethod(), out)
 }
 
 format_igrps <- function (igrps) {
