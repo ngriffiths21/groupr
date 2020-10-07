@@ -12,7 +12,7 @@ igroup_vars <- function (x) {
 
 #' Group a Tibble With Inapplicable Groups
 #'
-#' Similar to dplyr::group_by, this function groups a
+#' Similar to \code{dplyr::group_by()}, this function groups a
 #' tibble while also marking certain groups as inapplicable.
 #'
 #' A grouped tibble has one or more grouping variables, where each unique

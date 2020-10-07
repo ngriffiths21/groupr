@@ -15,7 +15,7 @@ group_by2(data, ...)
 An igrouped tibble
 }
 \description{
-Similar to dplyr::group_by, this function groups a
+Similar to \code{dplyr::group_by()}, this function groups a
 tibble while also marking certain groups as inapplicable.
 }
 \details{
