@@ -12,6 +12,8 @@ Description: The groupr package provides a more powerful version of grouped
   which is a simple but widely useful way to express structure in a dataset.
   It also provides powerful pivoting and other group manipulation functions.
 License: MIT + file LICENSE
+URL: https://github.com/ngriffiths21/groupr
+BugReports: https://github.com/ngriffiths21/groupr/issues
 Encoding: UTF-8
 LazyData: true
 Suggests: 
@@ -25,7 +27,6 @@ Imports:
     rlang,
     vctrs,
     purrr,
-    stringr,
     tidyr,
     tibble
 VignetteBuilder: knitr
