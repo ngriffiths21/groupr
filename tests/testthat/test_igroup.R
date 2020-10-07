@@ -29,7 +29,6 @@ test_that("group_by2 throws if groups are unavailable", {
 })
 
 test_that("group_by2 throws if inapplicable value doesn't exist", {
-  skip("error handle later")
   expect_error(group_by2(mtcars, vs = 3))
 })
 

@@ -37,8 +37,10 @@ colgrp <- function (x, data_name, index_name = "group") {
   spec_colgrp(x, make_spec(index_name, !!!args))
 }
 
-#' Separate columns by character
-sep_colgrp <- function (x, sep) {
+#' Separate columns by a character
+#' 
+#' @export
+sep_colgrp <- function (x, sep, index_name = "group") {
   datacols <- setdiff(names(x), group_vars(x))
   splitnms <- strsplit(datacols, sep, fixed = TRUE)
   if(!all(map_lgl(splitnms, ~length(.) == 2))) {
@@ -54,7 +56,7 @@ sep_colgrp <- function (x, sep) {
     y
   }, .init = list())
 
-  spec <- make_spec("group", !!!spec_input)
+  spec <- make_spec(index_name, !!!spec_input)
   spec_colgrp(x, spec)
 }
 
@@ -63,6 +65,9 @@ colgrp_vars <- function (x) {
   setdiff(names(colgrps), ".index")
 }
 
+#' Set column grouping for an already structured dataframe
+#' 
+#' @export
 infer_colgrps <- function (x, index_name = "group", sep = "_") {
   datacols <- x[map_lgl(x, is.data.frame)]
   datanms <- names(datacols)
@@ -71,4 +76,8 @@ infer_colgrps <- function (x, index_name = "group", sep = "_") {
   
   attr(x, "colgroups") <- make_spec(index_name, !!!data_grps)
   x
+}
+
+col_index_name <- function (x) {
+  attr(attr(x, "colgroup"), "index_name")
 }

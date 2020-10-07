@@ -65,12 +65,12 @@ make_col <- function (x, col, nm, datacol) {
 
 pivot_cg <- function (x, rows) {
   old_igrps <- igroup_vars(x)
-  # not_found <- unlist(rows)[!unlist(cols) %in% names(x)]
-  # if (length(not_found) != 0) {
-  #   abort(paste0("pivot_grps: could not find data columns requested in argument `rows`\n ✖ missing data columns: ",
-  #                paste0(not_found, collapse = ", ")),
-  #         class = "error_miss_col")
-  # }
+  if (length(rows) != 1) {
+    abort("pivot_grps: argument `rows` must be a single string")
+  }
+  if (!rows %in% col_index_name(x)) { 
+    abort(paste0("pivot_grps: column grouping `", rows, "` does not exist"), class = "error_miss_col")
+  }
   out <- dplyr::group_modify(
     x, ~ col_grps(., rows)
   )
@@ -131,7 +131,7 @@ pivot_gc <- function (x, col) {
     group_by(!!!syms(group_vars(exp))) %>%
     dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(col)),
                                    colgrps)) %>%
-    group_by2(!!!grps)
+    group_by2(!!!syms(names(grps)))
 
   infer_colgrps(out, index_name = col)
 }

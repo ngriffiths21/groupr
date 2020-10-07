@@ -34,14 +34,6 @@ testb3 <-
   group_by2(grp) %>% 
   infer_colgrps("is_ok")
 
-testb <-
-  tibble::tribble(
-    ~grp, ~val_ok, ~val_notok,
-    1, 1.9, NA,
-    2, 3.1, 4.9
-  ) %>%
-  group_by2(grp)
-
 testc <- 
   tibble::tribble(
     ~grp, ~type, ~subgrp, ~val,
@@ -109,7 +101,6 @@ test_that("pivot_grps throws when col isn't in the grouping", {
 })
 
 test_that("pivot_grps throws when `row` refers to missing columns", {
-  skip("error handle later")
   expect_error(pivot_grps(testd, rows = "nonexistent"),
                class = "error_miss_col")
 })

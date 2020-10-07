@@ -45,6 +45,13 @@ group_by2.data.frame <- function (data, ...) {
                  paste0(not_found, collapse = ", ")),
           class = "error_miss_col")
   }
+  
+  iwalk(dots, function (.x, .y) {
+    if(!all(.x %in% data[[.y]])) {
+      abort(paste0("group_by2: could not mark value `", .x, "` of `", .y,
+                   "` as inapplicable."))
+    }
+  })
 
   group_by2_ok(data, dots)
 }
@@ -78,6 +85,7 @@ dot_to_arg <- function (i, dots) {
   if(is.symbol(curr[[1]])) {
     return(setNames(list(NULL), rlang::as_name(curr[[1]])))
   } else if (length(names(curr)) != 0 && names(curr) != "") {
+    curr[[1]] <- eval(curr[[1]])
     return(curr)
   } else {
     stop("could not parse argument to group_by2")
@@ -121,7 +129,7 @@ expand_igrps <- function (x) {
   app_data <- x[applicable_row_nos(group_data(x)),]
   
   group_by2(vec_rbind(app_data, exp_inaps),
-            !!!igroup_vars(x))
+            !!!syms(group_vars(x)))
 }
 
 applicable_row_nos <- function (agrps) {
