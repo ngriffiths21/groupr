@@ -15,25 +15,20 @@ knitr::opts_chunk$set(
 )
 ```
 
-# groups
+# groupr
 
 <!-- badges: start -->
 
-![R-CMD-check](https://github.com/ngriffiths21/groups/workflows/R-CMD-check/badge.svg)
+[![R-CMD-check](https://github.com/ngriffiths21/groupr/workflows/R-CMD-check/badge.svg)]()
 
+[![Codecov test coverage](https://codecov.io/gh/ngriffiths21/groupr/branch/master/graph/badge.svg)](https://codecov.io/gh/ngriffiths21/groupr?branch=master)
 <!-- badges: end -->
 
-The groups package is designed to work with tibbles and dplyr. It provides replacements for tidyverse grouping and pivoting operations, and uses richer data structures to make these operations easier to think about.
+The groupr package is designed to work with tibbles and dplyr. It provides replacements for tidyverse grouping and pivoting operations, and uses richer data structures to make these operations easier to think about.
 
 ## Motivation
 
-There are two main ideas behind this package. First is the idea of [inapplicable data](https://towardsdatascience.com/richer-missing-values-dea7377f5541). While we often use `NA` as a placeholder for unknown but important information, R doesn't provide a way to mark data that should definitely be ignored. `groups` provides an inapplicable value (printed `<I>`).
-
-This makes a few different operations easier:
-
-**Calculation on a subset**. In a dataset containing two groups, A and B, it is easier to express that we want to calculate the square roots of all A values, store them in a new column, and fill the remaining rows with `NA`.
-
-**Hierarchical groups**. In a dataset with two grouping variables, `main` and `subgroup`, we can set `subgroup` to `<I>` when we want to indicate that the data applies to the entire main group.
+There are two main ideas behind this package. First is the idea of [inapplicable data](https://towardsdatascience.com/richer-missing-values-dea7377f5541). While we often use `NA` as a placeholder for unknown but important information, R doesn't provide a way to mark data that should definitely be ignored. `groupr` provides an inapplicable value (printed `<I>`).
 
 The second main idea is that pivoting is just a way to [rearrange groups of data](https://epinotes.netlify.app/post/pivoting/). Some kinds of pivots cannot be expressed by a single tidyr pivot statement and require two or even three consecutive pivot calls. Inapplicable groups can be used to describe some of these more complex operations in a very straightforward way.
 
@@ -42,13 +37,13 @@ The second main idea is that pivoting is just a way to [rearrange groups of data
 ### Install
 
 ```{r eval=FALSE}
-devtools::install_github("ngriffiths21/groups")
+devtools::install_github("ngriffiths21/groupr")
 ```
 
 ### Easier pivots using groups
 
 ```{r}
-library(groups)
+library(groupr)
 library(dplyr, warn.conflicts = FALSE)
 library(tidyr)
 ```
@@ -70,7 +65,7 @@ p_df2 <- tibble::tribble(
 p_df2
 
 # group and make the NA an inapplicable grouping
-p_df2 <- group_by2(p_df2, grp1 = NULL, grp2 = NA)
+p_df2 <- group_by2(p_df2, grp1, grp2 = NA)
 
 group_data(p_df2)
 
@@ -87,17 +82,19 @@ Note that with this inapplicable grouping, the value from the "C" group is appli
 Make row groups out of columns (pivot longer):
 
 ```{r}
-p_df <- group_by2(iris, Species = NULL)
+p_df <- group_by2(iris, Species)
 
-# groups version
-pivot_grps(p_df, rows = list(value = c("Sepal.Length", "Sepal.Width")))
+# groups version: make column grouping, then pivot
+colgrouped <- sep_colgrp(p_df, ".", index_name = "Measurement")
+colgrouped
+pivot_grps(colgrouped, rows = "Measurement")
 
 # tidyr version
-pivot_longer(iris, cols = c(Sepal.Length, Sepal.Width), values_to = "value")
+pivot_longer(iris, cols = c(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width),
+             values_to = "value")
 ```
 
-In addition, groups supports creating multiple new columns, which is not possible in tidyr.
-
+Using this approach we can preserve separate columns for each flower part rather than combining them into one.
 
 Pivot both rows and columns:
 
@@ -107,20 +104,13 @@ p_df3 <- pivot_grps(p_df2, cols = "grp1")
 p_df3
 
 # groups version
-pivot_grps(p_df3, rows = list(val = c("val_A", "val_B", "val_C")),
+pivot_grps(p_df3, rows = "grp1",
            cols = "grp2")
-
-# tidyr version
-pivot_wider(
-  pivot_longer(p_df3, cols = c(val_A, val_B, val_C), values_to = "val"),
-  names_from = grp2,
-  values_from = val
-)
 ```
 
 ## Lifecycle
 
-This package is currently experimental. At this point it has only undergone limited testing and it is not optimized for performance. The API is likely to change.
+At this point this is experimental, with limited testing. The API is likely to change.
 
 ## License
 

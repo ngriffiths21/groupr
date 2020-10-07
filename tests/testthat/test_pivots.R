@@ -1,20 +1,38 @@
 context("Pivoting")
 
 testa <- tibble::tribble(
-  ~ ok, ~ grp, ~ val,
+  ~ is_ok, ~ grp, ~ val,
   "ok", 1, 1.9,
   "ok", 2, 3.1,
   "notok", 2, 4.9
 ) %>%
-  group_by2(ok = NULL, grp = NULL)
+  group_by2(is_ok, grp)
 
-testb <-
-  tibble::tribble(
-    ~grp, ~val_ok, ~val_notok,
-    1, 1.9, NA,
-    2, 3.1, 4.9
+testb2 <-
+  tibble(
+    grp = c(1, 2),
+    val = tibble(
+      ok = c(1.9, 3.1),
+      notok = c(NA, 4.9)
+    )
   ) %>%
-  group_by2(grp = NULL)
+  group_by2(grp) %>% 
+  infer_colgrps("is_ok")
+
+testb3 <-
+  tibble(
+    grp = c(1, 2),
+    val = tibble(
+      ok = c(1.9, 3.1),
+      notok = c(NA, 4.9)
+    ),
+    val2 = tibble(
+      ok = c(3, 4),
+      notok = c(NA, 5)
+    ),
+  ) %>%
+  group_by2(grp) %>% 
+  infer_colgrps("is_ok")
 
 testc <- 
   tibble::tribble(
@@ -25,7 +43,7 @@ testc <-
     2, "sub", "sub2", 3.8,
     2, "main", "na", 4.0
   ) %>%
-  group_by2(grp = NULL, type = NULL, subgrp = "na")
+  group_by2(grp, type, subgrp = "na")
 
 testd <-
   tibble::tribble(
@@ -39,43 +57,42 @@ testd <-
   )
 
 test_that("can pivot group to column", {
-  expect_equal(pivot_gc(testa, "ok"), testb)
+  expect_equal(pivot_gc(testa, "is_ok"), testb2)
 })
 
 test_that("can pivot column to group", {
-  obj <- pivot_cg(testb, list(val = c("val_ok", "val_notok"))) %>%
-    rename(ok = name) %>%
-    ungroup() %>%
-    mutate(ok = recode(ok, "val_ok" = "ok", "val_notok" = "notok")) %>%
-    tidyr::drop_na(val) %>%
-    group_by2(ok = NULL, grp = NULL)
-  expect_mapequal(obj, testa)
+  obj <- pivot_cg(testb2, "is_ok")
+  expect_equal(nrow(dplyr::inner_join(testa, obj)), 3)
 })
 
 testres <- tibble(
-  name = c("val_notok", "val_ok"),
-  val_1 = c(NA, 1.9),
-  val_2 = c(4.9, 3.1)
+  is_ok = c("notok", "ok"),
+  val = tibble(`1` = c(NA, 1.9),
+               `2` = c(4.9, 3.1))
 ) %>%
-  group_by2(name = NULL)
+  group_by2(is_ok)
 
 test_that("can pivot both ways", {
-  res <- pivot_grps(testb, rows = list(val = c("val_ok", "val_notok")),
+  res <- pivot_grps(testb2, rows = "is_ok",
                cols = "grp")
   expect_s3_class(res, "tbl")
-  expect_mapequal(res, testres)
+  expect_equal(names(res), names(testres))
+})
+
+test_that("can pivot two column groupings to rows", {
+  expect_equal(names(pivot_cg(testb3, "is_ok")), c("grp", "is_ok", "val", "val2"))
 })
 
 test_that("can ignore I groups", {
   res <- pivot_grps(testc, cols = "type")
-  expect_equal(res$val_main, c(NA, NA, 4, 4))
+  expect_equal(res$val$main, c(NA, NA, 4, 4))
 })
 
 mtcars2 <- mtcars %>%
-  mutate(id = seq_along(mpg))
+  dplyr::mutate(id = seq_along(mpg))
 
 test_that("can pivot groups for a bigger dataset", {
-  input <- group_by2(mtcars2, vs = NULL, id = NULL)
+  input <- group_by2(mtcars2, vs, id)
   expect_equal(nrow(pivot_grps(input, cols = "vs")), 32)
 })
 
@@ -84,11 +101,11 @@ test_that("pivot_grps throws when col isn't in the grouping", {
 })
 
 test_that("pivot_grps throws when `row` refers to missing columns", {
-  expect_error(pivot_grps(testd, rows = list(new = "nonexistent")),
+  expect_error(pivot_grps(testd, rows = "nonexistent"),
                class = "error_miss_col")
 })
 
 test_that("pivot_grps throws when grouping does not uniquely identify all rows", {
-  testd_grp <- group_by2(testd, grp2 = NULL)
+  testd_grp <- group_by2(testd, grp2)
   expect_error(pivot_grps(testd_grp, cols = "grp2"), class = "error_bad_pivot")
 })

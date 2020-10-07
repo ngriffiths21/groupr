@@ -40,58 +40,69 @@ pivot_grps <- function (x, rows = NULL, cols = NULL) {
 }
   
 
-col_grps <- function (x, cols) {
+col_grps <- function (x, col) {
+  cgrps <- attr(x, "colgroups")
+  
   cbind(
     x[group_cols(data = x)],
-    imap_dfr(cols, ~ make_col(x, .x, .y))
+    make_cols(x, cgrps$.index, col)
   )
 }
 
-make_col <- function (x, col, nm) {
-  map(col, ~ tibble::tibble(
-    name = rep_along(x[[.]], .),
-    !!nm := x[[.]]
+make_cols <- function (x, col, nm) {
+  map(names(x[-group_cols(data = x)]),
+      ~ make_col(x, col, nm, .)) %>% 
+    reduce(~ vec_cbind(.x, .y[-1]))
+}
+
+make_col <- function (x, col, nm, datacol) {
+  out <- map(col, ~ tibble::tibble(
+    !!nm := rep_along(x[[datacol]][[.]], .),
+    !!datacol := x[[datacol]][[.]]
   )) %>%
     reduce(vctrs::vec_rbind)
 }
 
-pivot_cg <- function (x, cols) {
+pivot_cg <- function (x, rows) {
   old_igrps <- igroup_vars(x)
-  not_found <- unlist(cols)[!unlist(cols) %in% names(x)]
-  if (length(not_found) != 0) {
-    abort(paste0("pivot_grps: could not find data columns requested in argument `rows`\n ✖ missing data columns: ",
-                 paste0(not_found, collapse = ", ")),
-          class = "error_miss_col")
+  if (length(rows) != 1) {
+    abort("pivot_grps: argument `rows` must be a single string")
+  }
+  if (!rows %in% col_index_name(x)) { 
+    abort(paste0("pivot_grps: column grouping `", rows, "` does not exist"), class = "error_miss_col")
   }
   out <- dplyr::group_modify(
-    x, ~ col_grps(., cols)
+    x, ~ col_grps(., rows)
   )
-  group_by2(out, !!!old_igrps, name = NULL)
+  group_by2(out, !!!old_igrps, !!rlang::sym(rows))
 }
             
-grp_cols <- function (x) {
+grp_cols <- function (x, colgrps) {
   grps <- attr(x, "groups")
   gnames <- names(grps[-length(grps)])
   dnames <- setdiff(names(x), gnames)
   grows <- grps[[".rows"]]
 
-  out <- slice_cbind(dplyr::ungroup(x[dnames]), grows)
-  
-  newnames <- cross2_str(
-   dnames,
-    names_fr_groups(grps[gnames])
-  )
+  sliced <- map(grows, ~ vec_slice(dplyr::ungroup(x[dnames]), .x)) %>% 
+    transpose()
 
-  names(out) <- newnames
-  out
+  newnames <- intersect(grps[[gnames]], colgrps)
+  
+  as_tibble(
+    map(sliced, ~ as_tibble(setNames(., newnames)))
+  )
 }
 
-pivot_gc <- function (x, cols) {
+pivot_gc <- function (x, col) {
+  if (length(col) > 1 | !is.null(colgrp_vars(x))) { abort(
+    "pivot_grps: cannot make more than one column index",
+    class = "error_bad_arg"
+  )}
   old_igrps <- igroup_vars(x)
-  not_found <- cols[!cols %in% names(old_igrps)]
+  not_found <- col[!col %in% names(old_igrps)]
   if (length(not_found) != 0) {
-    abort(paste0("pivot_grps: couldn't find the grouping variables requested by argument `cols`.",
-                 "\n✖ Missing grouping variables: ",
+    abort(paste0("pivot_grps: couldn't find the grouping variable requested by argument `col`.",
+                 "\nMissing grouping variable: ",
                  paste0(not_found, collapse = ", ")),
           class = "error_bad_arg")
   }
@@ -100,31 +111,27 @@ pivot_gc <- function (x, cols) {
   not_uniq <- any(map_lgl(grp_rows, ~ length(.) > 1))
   if (not_uniq) {
     abort(paste0("pivot_grps: could not pivot from groups to columns.",
-                 "\n✖ The grouping for `x` must uniquely identify rows.",
-                 "\n✖ Current grouping: ",
+                 "\nThe grouping for `x` must uniquely identify rows.",
+                 "\nCurrent grouping: ",
                  paste0(names(old_igrps), collapse = ", ")),
           class = "error_bad_pivot")
   }
 
-  grps <- old_igrps[!names(old_igrps) %in% cols]
+  grps <- old_igrps[names(old_igrps) != col]
   exp <- expand_igrps(group_by2(x, !!!grps))
+  
+  # dplyr::group_by avoids polymiss vectors
+  grp_dat <- group_data(dplyr::group_by(exp, !!!syms(col)))
+  attr(grp_dat, ".drop") <- NULL
+  
+  colgrps <- grp_dat[-length(grp_dat)][[1]]
 
-  exp %>%
+  out <-
+    exp %>%
     group_by(!!!syms(group_vars(exp))) %>%
-    dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(cols)))) %>%
-    group_by2(!!!grps)
-}
+    dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(col)),
+                                   colgrps)) %>%
+    group_by2(!!!syms(names(grps)))
 
-slice_cbind <- function (x, rows) {
-  map(rows, ~ dplyr::slice(x, .)) %>%
-    reduce(~ suppressMessages(dplyr::bind_cols(.x, .y)))
-}
-
-names_fr_groups <- function (x) {
-  map(transpose(x), lift(stringr::str_c, sep = "_"))
-}
-
-cross2_str <- function (x, y) {
-  cross2(x, y) %>%
-    map_chr(lift(stringr::str_c, sep = "_"))
+  infer_colgrps(out, index_name = col)
 }

@@ -1,25 +1,25 @@
-Package: groups
+Package: groupr
 Title: Groups with Inapplicable Values
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     person(given = "Nicholas",
            family = "Griffiths",
            role = c("aut", "cre"),
            email = "ngriffiths21@gmail.com",
            comment = c(ORCID = "0000-0001-8166-9045"))
-Description: The groups package provides a more powerful version of grouped
+Description: The groupr package provides a more powerful version of grouped
   tibbles from dplyr. It allows groups in a tibble to be marked inapplicable,
   which is a simple but widely useful way to express structure in a dataset.
-  It also provides replacements for common tidyverse functions that are
-  centered around groupings with potentially inapplicable values.
+  It also provides powerful pivoting and other group manipulation functions.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Suggests: 
     testthat,
     knitr,
-    rmarkdown
-RoxygenNote: 7.0.2
+    rmarkdown,
+    covr
+RoxygenNote: 7.1.1
 Imports: 
     dplyr,
     rlang,
