@@ -25,7 +25,6 @@ Imports:
     rlang,
     vctrs,
     purrr,
-    stringr,
     tidyr,
     tibble
 VignetteBuilder: knitr
