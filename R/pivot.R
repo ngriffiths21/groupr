@@ -102,7 +102,7 @@ pivot_gc <- function (x, col) {
   not_found <- col[!col %in% names(old_igrps)]
   if (length(not_found) != 0) {
     abort(paste0("pivot_grps: couldn't find the grouping variable requested by argument `col`.",
-                 "\n✖ Missing grouping variable: ",
+                 "\nMissing grouping variable: ",
                  paste0(not_found, collapse = ", ")),
           class = "error_bad_arg")
   }
@@ -111,8 +111,8 @@ pivot_gc <- function (x, col) {
   not_uniq <- any(map_lgl(grp_rows, ~ length(.) > 1))
   if (not_uniq) {
     abort(paste0("pivot_grps: could not pivot from groups to columns.",
-                 "\n✖ The grouping for `x` must uniquely identify rows.",
-                 "\n✖ Current grouping: ",
+                 "\nThe grouping for `x` must uniquely identify rows.",
+                 "\nCurrent grouping: ",
                  paste0(names(old_igrps), collapse = ", ")),
           class = "error_bad_pivot")
   }
@@ -134,20 +134,4 @@ pivot_gc <- function (x, col) {
     group_by2(!!!syms(names(grps)))
 
   infer_colgrps(out, index_name = col)
-}
-
-slice_cbind <- function (x, rows) {
-  res <-
-    map(rows, ~ dplyr::slice(x, .)) %>%
-    reduce(~ suppressMessages(dplyr::bind_cols(.x, .y)))
-  res
-}
-
-names_fr_groups <- function (x) {
-  map(transpose(x), lift(stringr::str_c, sep = "_"))
-}
-
-cross2_str <- function (x, y) {
-  cross2(x, y) %>%
-    map_chr(lift(stringr::str_c, sep = "_"))
 }

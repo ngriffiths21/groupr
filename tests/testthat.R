@@ -1,4 +1,4 @@
 library(testthat)
-library(groups)
+library(groupr)
 
-test_check("groups")
+test_check("groupr")

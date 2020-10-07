@@ -2,7 +2,7 @@
 % Please edit documentation in R/igroup.R
 \name{group_by2}
 \alias{group_by2}
-\title{Group a tibble with inapplicable groups}
+\title{Group a Tibble With Inapplicable Groups}
 \usage{
 group_by2(data, ...)
 }

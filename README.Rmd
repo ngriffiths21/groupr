@@ -19,8 +19,9 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 
-![R-CMD-check](https://github.com/ngriffiths21/groupr/workflows/R-CMD-check/badge.svg)
+[![R-CMD-check](https://github.com/ngriffiths21/groupr/workflows/R-CMD-check/badge.svg)]()
 
+[![Codecov test coverage](https://codecov.io/gh/ngriffiths21/groupr/branch/master/graph/badge.svg)](https://codecov.io/gh/ngriffiths21/groupr?branch=master)
 <!-- badges: end -->
 
 The groupr package is designed to work with tibbles and dplyr. It provides replacements for tidyverse grouping and pivoting operations, and uses richer data structures to make these operations easier to think about.

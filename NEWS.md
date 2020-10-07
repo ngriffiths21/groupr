@@ -8,4 +8,6 @@
 
 * Function `pivot_grps()` for pivoting data using a group framework
 
+* Functions `colgrp()`, `infer_colgrps()`, and `sep_colgrp()` for column grouping
+
 * `introduction` vignette

@@ -2,7 +2,7 @@
 % Please edit documentation in R/igroup.R
 \name{ungroup.igrouped_df}
 \alias{ungroup.igrouped_df}
-\title{Ungroup a tibble with inapplicable groups}
+\title{Ungroup a Tibble With Inapplicable Groups}
 \usage{
 \method{ungroup}{igrouped_df}(x)
 }

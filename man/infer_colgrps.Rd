@@ -2,10 +2,21 @@
 % Please edit documentation in R/columns.R
 \name{infer_colgrps}
 \alias{infer_colgrps}
-\title{Set column grouping for an already structured dataframe}
+\title{Set Column Grouping for a Structured Data Frame}
 \usage{
 infer_colgrps(x, index_name = "group", sep = "_")
 }
+\arguments{
+\item{x}{A tibble with data frame data columns}
+
+\item{index_name}{A name for the new column index}
+
+\item{sep}{A character used to join the data column and group names}
+}
+\value{
+A grouped tibble
+}
 \description{
-Set column grouping for an already structured dataframe
+Takes a data frame where each non row index is a data frame column, and
+sets the corresponding column grouping.
 }

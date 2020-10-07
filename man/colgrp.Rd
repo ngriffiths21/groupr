@@ -6,6 +6,18 @@
 \usage{
 colgrp(x, data_name, index_name = "group")
 }
+\arguments{
+\item{x}{A tibble}
+
+\item{data_name}{A string, the name of the new column}
+
+\item{index_name}{A string, the name of the new column index}
+}
+\value{
+A grouped tibble
+}
 \description{
-Make a Single Column Grouping
+Takes a tibble and groups columns together into a single data column. All
+columns that are not row indices will be grouped, and the resulting column
+will be named \code{data_name}.
 }

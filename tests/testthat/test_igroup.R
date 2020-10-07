@@ -63,3 +63,9 @@ test_that("can expand a different igroup (?)", {
     TRUE
   })
 })
+
+test_that("can print a grouped tbl", {
+  expect_equal(
+    grep("Row indices", paste0(format(tsti_a), collapse = "")), 1
+  )
+})

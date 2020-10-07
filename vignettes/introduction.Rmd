@@ -14,14 +14,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-The groupr package is designed to make certain forms of data manipulation easier by representing the underlying data in slightly richer ways. In particular, the standard grouping function `dplyr::group_by` is extended to include groups that can be marked "inapplicable" at certain values of the grouping variable. The hope is that code that can recognize these kinds of groups will be simpler to write and easier to understand. The package also provides functions for some tasks, like pivoting, that are especially well suited to this idea.
+The groupr package is designed to make certain forms of data manipulation easier by representing the underlying data in richer ways. In particular, the standard grouping function `dplyr::group_by` is extended to include groups that can be marked "inapplicable" at certain values of the grouping variable. The hope is that code that can recognize these kinds of groups will be simpler to write and easier to understand. The package also provides functions for some tasks, like pivoting, that are especially well suited to this idea.
 
 ## The meaning of inapplicable groups
 
 In dplyr, groups are denoted with a grouping column that contains unique values for every group. For example, we can group `mtcars` by the variable `vs`:
 
 ```{r}
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 group_by(mtcars, vs)
 ```
 
@@ -56,13 +56,11 @@ as_tibble(iris)
 
 We could pivot to "longer" format by collapsing the different measurements into a single column. Equivalently, we can consider the columns `Seal.Length, Sepal.Width, ...` to describe groups of data, not distinct variables. In other words, the four columns together form one collection of data, and each column is a subgroup of that collection.
 
-To pivot, we transfer this "column grouping" to the standard dplyr "row grouping." To do this we just take our groups out of the different columns and merge them into one. The result is a consolidated column of data (`value`), along with a standard (row) grouping variable (`name`).
+To pivot, we transfer this "column grouping" to the standard dplyr "row grouping." To do this we just take our groups out of the different columns and merge them into one. The result is a consolidated column of data (`value`), along with a standard (row) grouping variable (`type`).
 
 ```{r}
 iris2 <- group_by2(iris, Species) %>% 
-  def_grp_cols("value", "type", slength = Sepal.Length,
-               swidth = Sepal.Width, plength = Petal.Length,
-               pwidth = Petal.Width)
+  colgrp("value", "type")
 
 pivot_grps(iris2, rows = "type")
 ```
@@ -86,7 +84,7 @@ df
 Imagine we want to convert the row grouping defined by `grp` into a column grouping. Without inapplicable groups we get this:
 
 ```{r}
-regular_df <- group_by2(df, grp = NULL, subgrp = NULL)
+regular_df <- group_by2(df, grp, subgrp)
 pivot_grps(regular_df, cols = "grp")
 ```
 
@@ -95,7 +93,7 @@ It looks a bit off. What if we wanted `val_2 == 10.2` for all values of subgrp? 
 This is an example of an operation that is very challenging to write with standard pivoting functions, but trivial with inapplicable groups. Simply group like this before pivoting:
 
 ```{r}
-igrp_df <- group_by2(df, grp = NULL, subgrp = NA)
+igrp_df <- group_by2(df, grp, subgrp = NA)
 pivot_grps(igrp_df, cols = "grp")
 ```
 
@@ -103,7 +101,7 @@ In this case we have a hierarchical grouping, where there are allowed to be mult
 
 Note also how the only difference is in the grouping structure. The operation itself remains concise and easy to understand.
 
-### Selecting data for computation
+### Later: selecting data for computation
 
 It is common to have a calculation to apply to only a subset of the data. For example, if you have group A and group B, you may be interested in calculating a mean for group A but leaving it missing for all the rows in group B. Depending on the calculation, this can be tough to express.
 

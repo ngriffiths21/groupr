@@ -10,7 +10,7 @@ igroup_vars <- function (x) {
       ~ unique(field(.[inapplicable(.)], "x")))
 }
 
-#' Group a tibble with inapplicable groups
+#' Group a Tibble With Inapplicable Groups
 #'
 #' Similar to dplyr::group_by, this function groups a
 #' tibble while also marking certain groups as inapplicable.
@@ -41,7 +41,7 @@ group_by2.data.frame <- function (data, ...) {
   not_found <- names(dots)[!names(dots) %in% names(data)]
   if(length(not_found) != 0) {
     abort(paste0("group_by2: must group by variables found in `data`.\n",
-                 "✖ Could not find columns: ",
+                 "Could not find columns: ",
                  paste0(not_found, collapse = ", ")),
           class = "error_miss_col")
   }
@@ -75,11 +75,11 @@ parse_grp_dots <- function (...) {
   flatten(map(1:length(dots), dot_to_arg, dots))
 }
 
-#' Parse an argument to group_by2
-#' 
-#' The param (dots[i]) should be either a named vector, which creates an inapplicable group,
-#' or a symbol making a full group. All other values are errors.
-#' 
+# Parse an argument to group_by2
+# 
+# The param (dots[i]) should be either a named vector, which creates an inapplicable group,
+# or a symbol making a full group. All other values are errors.
+# 
 dot_to_arg <- function (i, dots) {
   curr <- dots[i]
   if(is.symbol(curr[[1]])) {
@@ -92,7 +92,7 @@ dot_to_arg <- function (i, dots) {
   }
 }
 
-#' Ungroup a tibble with inapplicable groups
+#' Ungroup a Tibble With Inapplicable Groups
 #'
 #' Ungroup method for tibbles that have inapplicable groups.
 #'
@@ -117,10 +117,10 @@ to_miss <- function (x) {
   ifelse(x, "I", NA_character_)
 }
 
-#' Add rows to capture each grouping
-#' 
-#' Expansion is turning a hierarchical grouping with I-values into a flat one
-#' without I-values.
+# Add rows to capture each grouping
+#
+# Expansion is turning a hierarchical grouping with I-values into a flat one
+# without I-values.
 expand_igrps <- function (x) {
   inap_grps <- inap_selector(group_data(x))
   if (sum(inap_grps) == 0) { return(x) }
@@ -153,10 +153,10 @@ expand_inap_row <- function (data, grow) {
   expand_igrp(group_by2(out, !!!newgrps))
 }
 
-#' Expand a df with one inapplicable grouping
-#' 
-#' @param x df, that can only have exactly one grouping variable
-#' @return A df with only the changed (formerly inapplicable) rows
+# Expand a Data Frame with One Inapplicable Grouping
+# 
+# @param x df, that can only have exactly one grouping variable
+# @return A df with only the changed (formerly inapplicable) rows
 expand_igrp <- function (x) {
   if(length(group_vars(x)) > 1) {
     stop("argument x has multiple groups, and cannot tell which is inapplicable (expand_igrps)")
