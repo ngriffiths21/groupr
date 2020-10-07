@@ -1,7 +1,7 @@
 ## Test environments
 
 * Local macOS, R 4.0.2
-* Ubuntu 18.04, R 4.0.2
+* Ubuntu 16.04, R 4.0.2
 * win-builder, R-devel
 
 ## R CMD check results
