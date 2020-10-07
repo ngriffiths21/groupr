@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/ngriffiths21/groupr/workflows/R-CMD-check/badge.svg)]()
+[![R-CMD-check](https://github.com/ngriffiths21/groupr/workflows/R-CMD-check/badge.svg)](https://github.com/ngriffiths21/groupr/actions?query=workflow%3AR-CMD-check)
 
 [![Codecov test coverage](https://codecov.io/gh/ngriffiths21/groupr/branch/master/graph/badge.svg)](https://codecov.io/gh/ngriffiths21/groupr?branch=master)
 <!-- badges: end -->
