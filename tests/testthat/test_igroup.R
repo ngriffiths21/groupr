@@ -33,12 +33,6 @@ test_that("group_by2 throws if inapplicable value doesn't exist", {
   expect_error(group_by2(mtcars, vs = 3))
 })
 
-test_that("group_by2 allows calculations of ivals", {
-  skip("feature")
-  res <- group_by2(mtcars, vs = 2 / 2)
-  expect_equal(length(igroup_vars(res)), 1)
-})
-
 test_that("group_by2 can make multiple groups", {
   res <- group_by2(mtcars, vs, gear)
   expect_equal(length(dplyr::groups(res)), 2)

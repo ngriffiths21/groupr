@@ -212,7 +212,7 @@ tbl_sum.igrouped_df <- function (x) {
   out <- c(`Row indices` = group_sum)
   
   if ("colgroups" %in% names(attributes(x))) {
-    out <- c(out, `Col index` = setdiff(names(attr(x, "colgroups")), ".cols"))
+    out <- c(out, `Col index` = attr(attr(x, "colgroups"), "index_name"))
   }
   
   c(NextMethod(), out)

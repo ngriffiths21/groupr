@@ -45,17 +45,18 @@ col_grps <- function (x, col) {
   
   cbind(
     x[group_cols(data = x)],
-    make_cols(x, cgrps[[col]], col)
+    make_cols(x, cgrps$.index, col)
   )
 }
 
 make_cols <- function (x, col, nm) {
-  map_dfc(names(x[-group_cols(data = x)]),
-          ~ make_col(x, col, nm, .))
+  map(names(x[-group_cols(data = x)]),
+      ~ make_col(x, col, nm, .)) %>% 
+    reduce(~ vec_cbind(.x, .y[-1]))
 }
 
 make_col <- function (x, col, nm, datacol) {
-  map(col, ~ tibble::tibble(
+  out <- map(col, ~ tibble::tibble(
     !!nm := rep_along(x[[datacol]][[.]], .),
     !!datacol := x[[datacol]][[.]]
   )) %>%
@@ -76,7 +77,7 @@ pivot_cg <- function (x, rows) {
   group_by2(out, !!!old_igrps, !!rlang::sym(rows))
 }
             
-grp_cols <- function (x, spec) {
+grp_cols <- function (x, colgrps) {
   grps <- attr(x, "groups")
   gnames <- names(grps[-length(grps)])
   dnames <- setdiff(names(x), gnames)
@@ -84,21 +85,24 @@ grp_cols <- function (x, spec) {
 
   sliced <- map(grows, ~ vec_slice(dplyr::ungroup(x[dnames]), .x)) %>% 
     transpose()
-  
-  newnames <- dplyr::inner_join(spec, grps[gnames], by = gnames)$.cols
-  charnames <- map(newnames, as.character)
+
+  newnames <- intersect(grps[[gnames]], colgrps)
   
   as_tibble(
-    map(sliced, ~ as_tibble(setNames(., charnames)))
+    map(sliced, ~ as_tibble(setNames(., newnames)))
   )
 }
 
-pivot_gc <- function (x, cols) {
+pivot_gc <- function (x, col) {
+  if (length(col) > 1 | !is.null(colgrp_vars(x))) { abort(
+    "pivot_grps: cannot make more than one column index",
+    class = "error_bad_arg"
+  )}
   old_igrps <- igroup_vars(x)
-  not_found <- cols[!cols %in% names(old_igrps)]
+  not_found <- col[!col %in% names(old_igrps)]
   if (length(not_found) != 0) {
-    abort(paste0("pivot_grps: couldn't find the grouping variables requested by argument `cols`.",
-                 "\n✖ Missing grouping variables: ",
+    abort(paste0("pivot_grps: couldn't find the grouping variable requested by argument `col`.",
+                 "\n✖ Missing grouping variable: ",
                  paste0(not_found, collapse = ", ")),
           class = "error_bad_arg")
   }
@@ -113,25 +117,23 @@ pivot_gc <- function (x, cols) {
           class = "error_bad_pivot")
   }
 
-  grps <- old_igrps[!names(old_igrps) %in% cols]
+  grps <- old_igrps[names(old_igrps) != col]
   exp <- expand_igrps(group_by2(x, !!!grps))
   
   # dplyr::group_by avoids polymiss vectors
-  grp_dat <- group_data(dplyr::group_by(exp, !!!syms(cols)))
+  grp_dat <- group_data(dplyr::group_by(exp, !!!syms(col)))
   attr(grp_dat, ".drop") <- NULL
   
-  spec <- grp_dat[-length(grp_dat)]
-  spec$.cols <- reduce(spec, ~ paste0(.x, "_", .y))
-  spec$.cols <- rlang::syms(as.character(spec$.cols))
+  colgrps <- grp_dat[-length(grp_dat)][[1]]
 
   out <-
     exp %>%
     group_by(!!!syms(group_vars(exp))) %>%
-    dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(cols)),
-                                   spec)) %>%
+    dplyr::group_modify(~ grp_cols(dplyr::group_by(., !!!syms(col)),
+                                   colgrps)) %>%
     group_by2(!!!grps)
-  attr(out, "colgroups") <- spec
-  out
+
+  infer_colgrps(out, index_name = col)
 }
 
 slice_cbind <- function (x, rows) {

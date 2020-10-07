@@ -9,17 +9,19 @@ make_spec <- function (index_name, ...) {
 
 #' make column index using a spec
 spec_colgrp <- function (x, spec) {
-  if (ncol(spec) != 2) { stop ("spec_clgrp: spec must identify one data column") }
-  data_name <- setdiff(names(spec), ".index")
-
-  dots <- map(spec[[data_name]], rlang::eval_tidy, data = x)
-  
-  oldnames <- map(spec[[data_name]], rlang::as_name)
-  
-  x[[data_name]] <- tibble(!!!dots)
-  out <- x[setdiff(names(x), oldnames)]
+  datanms <- setdiff(names(spec), ".index")
+  nested <- map_dfc(datanms, ~ make_one_col(x, spec[.]))
+  out <- vec_cbind(x[group_vars(x)], nested)
   attr(out, "colgroups") <- spec
   out
+}
+
+make_one_col <- function (x, spec_col) {
+  dots <- map(spec_col[[1]], rlang::eval_tidy, data = x)
+  oldnames <- map(spec_col[[1]], rlang::as_name)
+  
+  x[[names(spec_col)]] <- tibble(!!!dots)
+  x[names(spec_col)]
 }
 
 #' Make a Single Column Grouping
@@ -35,20 +37,38 @@ colgrp <- function (x, data_name, index_name = "group") {
   spec_colgrp(x, make_spec(index_name, !!!args))
 }
 
+#' Separate columns by character
 sep_colgrp <- function (x, sep) {
+  datacols <- setdiff(names(x), group_vars(x))
+  splitnms <- strsplit(datacols, sep, fixed = TRUE)
+  if(!all(map_lgl(splitnms, ~length(.) == 2))) {
+    stop("The separator `", sep, "` must appear exactly once in each data column name.")
+  }
   
+  grp_by_dcol <- transpose(splitnms)
+  
+  spec_input <- reduce(1:length(datacols), function (y, x) {
+    named_col <- setNames(datacols[x], grp_by_dcol[[2]][[x]])
+    currgrp <- grp_by_dcol[[1]][[x]]
+    y[[currgrp]] <- c(y[[currgrp]], named_col)
+    y
+  }, .init = list())
+
+  spec <- make_spec("group", !!!spec_input)
+  spec_colgrp(x, spec)
 }
 
+colgrp_vars <- function (x) {
+  colgrps <- attr(x, "colgroups")
+  setdiff(names(colgrps), ".index")
+}
 
-
-# older version of adding a colgroup spec
-add_grps <- function (df, grp_name, grp_vals) {
-  grp_dat <- tibble(
-    !!grp_name := grp_vals,
-    .cols = syms(grp_vals)
-  )
-
-  grp_ord <- grp_dat[order(grp_dat[1]),]
-  attr(df, "colgroups") <- grp_ord
-  df
+infer_colgrps <- function (x, index_name = "group", sep = "_") {
+  datacols <- x[map_lgl(x, is.data.frame)]
+  datanms <- names(datacols)
+  data_grps <- map(datanms, ~ setNames(paste0(., sep, names(x[[.]])), names(x[[.]])))
+  names(data_grps) <- datanms
+  
+  attr(x, "colgroups") <- make_spec(index_name, !!!data_grps)
+  x
 }

@@ -11,11 +11,28 @@ testa <- tibble::tribble(
 testb2 <-
   tibble(
     grp = c(1, 2),
-    ok = c(1.9, 3.1),
-    notok = c(NA, 4.9)
+    val = tibble(
+      ok = c(1.9, 3.1),
+      notok = c(NA, 4.9)
+    )
   ) %>%
   group_by2(grp) %>% 
-  def_grp_cols("val", "is_ok", ok = ok, notok = notok)
+  infer_colgrps("is_ok")
+
+testb3 <-
+  tibble(
+    grp = c(1, 2),
+    val = tibble(
+      ok = c(1.9, 3.1),
+      notok = c(NA, 4.9)
+    ),
+    val2 = tibble(
+      ok = c(3, 4),
+      notok = c(NA, 5)
+    ),
+  ) %>%
+  group_by2(grp) %>% 
+  infer_colgrps("is_ok")
 
 testb <-
   tibble::tribble(
@@ -71,8 +88,7 @@ test_that("can pivot both ways", {
 })
 
 test_that("can pivot two column groupings to rows", {
-  skip("feature")
-  expect_true(FALSE)
+  expect_equal(names(pivot_cg(testb3, "is_ok")), c("grp", "is_ok", "val", "val2"))
 })
 
 test_that("can ignore I groups", {
