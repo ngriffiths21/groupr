@@ -5,10 +5,12 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/groupr)](https://CRAN.R-project.org/package=groupr)
 [![R-CMD-check](https://github.com/ngriffiths21/groupr/workflows/R-CMD-check/badge.svg)](https://github.com/ngriffiths21/groupr/actions?query=workflow%3AR-CMD-check)
-
 [![Codecov test
 coverage](https://codecov.io/gh/ngriffiths21/groupr/branch/master/graph/badge.svg)](https://codecov.io/gh/ngriffiths21/groupr?branch=master)
+
 <!-- badges: end -->
 
 The groupr package is designed to work with tibbles and dplyr. It
