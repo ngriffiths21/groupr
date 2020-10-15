@@ -117,3 +117,21 @@ infer_colgrps <- function (x, index_name = "group", sep = "_") {
 col_index_name <- function (x) {
   attr(attr(x, "colgroup"), "index_name")
 }
+
+#' Remove Column Grouping
+#' 
+#' Separate the current column grouping, represented by a data frame column, into
+#' individual columns. The name of each new column is a concatenation of the
+#' data column name, the argument \code{sep}, and the group name.
+#' 
+#' @param data A tibble with a column grouping
+#' @param sep The separator character used to construct new column names
+#' @return A tibble without a column grouping
+#' 
+#' @export
+drop_colgrp <- function (data, sep = "_") {
+  tidyr::unpack(data, colgrp_vars(data), names_sep = sep) %>% 
+    group_by2(!!!igroup_vars(data))
+}
+
+

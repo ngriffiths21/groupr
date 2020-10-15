@@ -85,7 +85,8 @@ Imagine we want to convert the row grouping defined by `grp` into a column group
 
 ```{r}
 regular_df <- group_by2(df, grp, subgrp)
-pivot_grps(regular_df, cols = "grp")
+pivot_grps(regular_df, cols = "grp") %>%
+  tidyr::unpack(val, names_sep = "_")
 ```
 
 It looks a bit off. What if we wanted `val_2 == 10.2` for all values of subgrp? In other words, what if `val = 10.2` describes the entire second group?
@@ -94,7 +95,9 @@ This is an example of an operation that is very challenging to write with standa
 
 ```{r}
 igrp_df <- group_by2(df, grp, subgrp = NA)
-pivot_grps(igrp_df, cols = "grp")
+
+pivot_grps(igrp_df, cols = "grp") %>%
+  tidyr::unpack(val, names_sep = "_")
 ```
 
 In this case we have a hierarchical grouping, where there are allowed to be multiple values for each value of `grp` but we may also have a single value that describes all the subgroups.

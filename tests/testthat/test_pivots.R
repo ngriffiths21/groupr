@@ -109,3 +109,8 @@ test_that("pivot_grps throws when grouping does not uniquely identify all rows",
   testd_grp <- group_by2(testd, grp2)
   expect_error(pivot_grps(testd_grp, cols = "grp2"), class = "error_bad_pivot")
 })
+
+test_that("error to be investigated", {
+  group_by2(hierarchical, grp, type, subgrp = "na") %>% 
+    pivot_grps(cols = "grp")
+})
