@@ -111,6 +111,8 @@ test_that("pivot_grps throws when grouping does not uniquely identify all rows",
 })
 
 test_that("error to be investigated", {
-  group_by2(hierarchical, grp, type, subgrp = "na") %>% 
+  res <- group_by2(hierarchical, grp, type, subgrp = "na") %>% 
     pivot_grps(cols = "grp")
+  
+  expect_equal(nrow(res), 3)
 })

@@ -161,10 +161,11 @@ expand_igrp <- function (x) {
   if(length(group_vars(x)) > 1) {
     stop("argument x has multiple groups, and cannot tell which is inapplicable (expand_igrps)")
   }
+  
+  app_nos <- applicable_row_nos(group_data(x))
+  if (length(app_nos) == 0) { return(x) }
 
-  Idata <- x[-applicable_row_nos(group_data(x)),]
-
-  if (nrow(Idata) == nrow(x)) { return(x) }
+  Idata <- x[-app_nos,]
 
   fill_irow(Idata)
 }
