@@ -69,3 +69,13 @@ test_that("can print a grouped tbl", {
     grep("Row indices", paste0(format(tsti_a), collapse = "")), 1
   )
 })
+
+test_that("can subset an igrouped df", {
+  no_grp_rows <-
+    group_by2(hierarchical, grp)[1:2,] %>% 
+    group_data() %>% 
+    pluck(".rows") %>% 
+    reduce(~ length(.y) + .x, .init = 0)
+  
+  expect_equal(no_grp_rows, 2)
+})
