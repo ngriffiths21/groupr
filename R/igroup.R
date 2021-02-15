@@ -143,6 +143,7 @@ expand_inap_grps <- function (x, inaps) {
           ~ expand_inap_row(x, as.list(inaps[.,])))
 }
 
+# data is the igrouped df, grow is the current row of group_data(data)
 expand_inap_row <- function (data, grow) {
   grow <- grow[-length(grow)]
   selectors <- grow[!map_lgl(grow, inapplicable)]
@@ -166,12 +167,18 @@ expand_igrp <- function (x) {
   if (length(app_nos) == 0) { return(x) }
 
   Idata <- x[-app_nos,]
+  gdata <- group_data(x)
 
-  fill_irow(Idata)
+  fill_irow(Idata, gdata)
 }
 
-fill_irow <- function (Idata) {
-  nonIvals <- drop_inap_firstcol(group_data(Idata))
+# Replicate an Inapplicable Row Filling In its Applicable Values
+# 
+# @param Idata df with one row containing an inapplicable value
+# @param gdata df containing group_data() output for the whole group
+# @return a df replicating the inapplicable row with the other applicable values in the group
+fill_irow <- function (Idata, gdata) {
+  nonIvals <- drop_inap_firstcol(gdata)
   expanded <- vec_cbind(nonIvals, tibble(data = list(Idata[!names(Idata) %in% names(nonIvals)])))
   
   sel_plm <- map_lgl(expanded, ~ "polymiss" %in% class(.))
@@ -180,6 +187,7 @@ fill_irow <- function (Idata) {
   tidyr::unnest(expanded, cols = .data$data)
 }
 
+# Get All Applicable Values in the First Column
 drop_inap_firstcol <- function (x) {
   x[!inapplicable(x[[1]]),1]
 }
@@ -223,11 +231,39 @@ tbl_sum.igrouped_df <- function (x) {
   if ("colgroups" %in% names(attributes(x))) {
     out <- c(out, `Col index` = attr(attr(x, "colgroups"), "index_name"))
   }
-  
+  x <- as_tibble(x)
   c(NextMethod(), out)
 }
 
 format_igrps <- function (igrps) {
   formatted <- map_chr(format(igrps), ~ ifelse(. == "", "", paste0(" (I: ", ., ")")))
   paste0(names(igrps), formatted)
+}
+
+restore_grps <- function (x, out) {
+  if (nrow(out) == 0) {
+    return(as_tibble(out))
+  }
+
+  igrps <- igroup_vars(x)
+  prune_names <- igrps[intersect(names(igrps), names(out))]
+  prune_vals <- imap(prune_names,
+                    ~ intersect(.x, out[[.y]]))
+  group_by2(out, !!!prune_vals)
+}
+
+#' @export
+`[.igrouped_df` <- function (x, i, j, drop = FALSE) {
+  out <- NextMethod()
+  if (!is.data.frame(out)) {
+    return(out)
+  } else {
+    restore_grps(x, out)
+  }
+}
+
+#' @export
+`[<-.igrouped_df` <- function (x, i, j, ..., value) {
+  out <- NextMethod()
+  restore_grps(x, out)
 }
