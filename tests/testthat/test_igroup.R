@@ -65,9 +65,9 @@ test_that("can expand a different igroup (?)", {
 })
 
 test_that("can print a grouped tbl", {
-  expect_equal(
-    grep("Row indices", paste0(format(tsti_a), collapse = "")), 1
-  )
+    expect_equal(
+      tbl_sum(tsti_a)[["Row indices"]], "main, grp (I: NA) [3]"
+    )
 })
 
 test_that("can subset an igrouped df", {
