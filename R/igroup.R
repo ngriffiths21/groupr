@@ -212,7 +212,7 @@ group_vars.igrouped_df <- function (x) {
   setdiff(names(dplyr::group_data(x)), c(".rows", "I"))
 }
 
-#' @importFrom dplyr tbl_sum
+#' @importFrom pillar tbl_sum
 #' @export
 tbl_sum.igrouped_df <- function (x) {
   grps <- dplyr::n_groups(x)
