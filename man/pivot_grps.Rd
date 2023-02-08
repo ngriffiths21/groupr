@@ -17,26 +17,21 @@ pivot_grps(x, rows = NULL, cols = NULL)
 A pivoted data frame with the new grouping
 }
 \description{
-Pivot a dataset by defining the way the current grouping
-will be transformed into a new one. A pivot to wider consumes
-a row grouping (created by group_by2) and produces a new
-set of columns. A pivot to longer consumes a column grouping
-and produces a new row grouping.
+Pivot a dataset by defining the way the current grouping will be transformed
+into a new one. A pivot to wider consumes a row grouping (created by
+group_by2) and produces a new set of columns. A pivot to longer consumes a
+column grouping and produces a new row grouping.
 }
 \details{
-To pivot a column grouping to a row grouping, pass the specification of the
-new row grouping using the \code{cols} argument. The format is \code{list(values_col =
-"oldcol_1", "oldcol_2", ...)}. This will take all the data from the old columns,
-combine them into a new column \code{values_col}, and automatically provide
-a grouping variable, which will be called \code{name}. The values of \code{name}
-will be the corresponding names of the old columns.
+To pivot a column grouping to a row grouping, pass the name of the column
+index using the \code{cols} argument.
 
-To pivot a row grouping to a column grouping, pass a grouped
-dataset (using group_by2) and specify which grouping variable should
-be consumed to produce a set of new columns.
+To pivot a row grouping to a column grouping, pass a grouped dataset (using
+group_by2) and specify which grouping variable should be consumed to produce
+a set of new columns.
 
-Both arguments can be passed in one call, in which case \code{rows} will be handled
-first, followed by \code{cols}.
+Both arguments can be passed in one call, in which case \code{rows} will be
+handled first, followed by \code{cols}.
 
 See the introduction vignette for more details and examples.
 }

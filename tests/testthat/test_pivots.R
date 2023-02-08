@@ -110,9 +110,19 @@ test_that("pivot_grps throws when grouping does not uniquely identify all rows",
   expect_error(pivot_grps(testd_grp, cols = "grp2"), class = "error_bad_pivot")
 })
 
-test_that("error to be investigated", {
-  res <- group_by2(hierarchical, grp, type, subgrp = "na") %>% 
-    pivot_grps(cols = "grp")
+test_that("can recover inapplicable row groupings after pivoting to columns", {
+  scientists %>% 
+    dplyr::filter(type != "Age") %>% 
+    group_by2(type, person, city, day = NA_real_) %>% 
+    pivot_grps(cols = "type") -> widetest
   
-  expect_equal(nrow(res), 3)
+  # make some attribute denoting that location rows should have inapplicable day
+  attr(widetest, "metas") <- list(Location = "day", Value = character())
+  
+  pivot_grps(widetest, rows = "type")
+  
+  stop("incorrect pivoting")
 })
+
+
+  
