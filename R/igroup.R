@@ -176,7 +176,7 @@ fill_irow <- function (Idata) {
   sel_plm <- map_lgl(expanded, ~ "polymiss" %in% class(.))
   expanded[sel_plm] <- map_df(expanded[sel_plm], ~ field(., "x"))
   
-  tidyr::unnest(expanded, cols = .data$data)
+  tidyr::unnest(expanded, cols = "data")
 }
 
 drop_inap_firstcol <- function (x) {
