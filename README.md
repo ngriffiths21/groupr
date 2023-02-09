@@ -9,7 +9,7 @@
 status](https://www.r-pkg.org/badges/version/groupr)](https://CRAN.R-project.org/package=groupr)
 [![R-CMD-check](https://github.com/ngriffiths21/groupr/workflows/R-CMD-check/badge.svg)](https://github.com/ngriffiths21/groupr/actions?query=workflow%3AR-CMD-check)
 [![Codecov test
-coverage](https://codecov.io/gh/ngriffiths21/groupr/branch/master/graph/badge.svg)](https://codecov.io/gh/ngriffiths21/groupr?branch=master)
+coverage](https://codecov.io/gh/ngriffiths21/groupr/branch/master/graph/badge.svg)](https://app.codecov.io/gh/ngriffiths21/groupr?branch=master)
 
 <!-- badges: end -->
 
@@ -54,7 +54,7 @@ Make columns out of row groups:
 
 ``` r
 p_df2
-#> # A tibble: 5 x 3
+#> # A tibble: 5 × 3
 #>   grp1   grp2   val
 #>   <chr> <dbl> <dbl>
 #> 1 A         1   1.9
@@ -67,7 +67,7 @@ p_df2
 p_df2 <- group_by2(p_df2, grp1, grp2 = NA)
 
 group_data(p_df2)
-#> # A tibble: 5 x 3
+#> # A tibble: 5 × 3
 #>         grp1       grp2       .rows
 #>   <polymiss> <polymiss> <list<int>>
 #> 1          A          1         [1]
@@ -78,7 +78,7 @@ group_data(p_df2)
 
 # groups version of pivot
 pivot_grps(p_df2, cols = "grp1")
-#> # A tibble:    2 x 2
+#> # A tibble:    2 × 2
 #> # Row indices: grp2 [2]
 #> # Col index:   grp1
 #>    grp2 val$A    $B    $C
@@ -88,7 +88,7 @@ pivot_grps(p_df2, cols = "grp1")
 
 # tidyr version
 pivot_wider(p_df2, names_from = grp1, values_from = val)
-#> # A tibble: 3 x 4
+#> # A tibble: 3 × 4
 #>    grp2     A     B     C
 #>   <dbl> <dbl> <dbl> <dbl>
 #> 1     1   1.9   4.7  NA  
@@ -107,7 +107,7 @@ p_df <- group_by2(iris, Species)
 # groups version: make column grouping, then pivot
 colgrouped <- sep_colgrp(p_df, ".", index_name = "Measurement")
 colgrouped
-#> # A tibble:    150 x 3
+#> # A tibble:    150 × 3
 #> # Row indices: Species [3]
 #> # Col index:   Measurement
 #>    Species Sepal$Length $Width Petal$Length $Width
@@ -124,7 +124,7 @@ colgrouped
 #> 10 setosa           4.9    3.1          1.5    0.1
 #> # … with 140 more rows
 pivot_grps(colgrouped, rows = "Measurement")
-#> # A tibble:    300 x 4
+#> # A tibble:    300 × 4
 #> # Row indices: Species, Measurement [6]
 #>    Species Measurement Sepal Petal
 #>    <fct>   <chr>       <dbl> <dbl>
@@ -143,7 +143,7 @@ pivot_grps(colgrouped, rows = "Measurement")
 # tidyr version
 pivot_longer(iris, cols = c(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width),
              values_to = "value")
-#> # A tibble: 600 x 3
+#> # A tibble: 600 × 3
 #>    Species name         value
 #>    <fct>   <chr>        <dbl>
 #>  1 setosa  Sepal.Length   5.1
@@ -168,7 +168,7 @@ Pivot both rows and columns:
 p_df3 <- pivot_grps(p_df2, cols = "grp1")
 
 p_df3
-#> # A tibble:    2 x 2
+#> # A tibble:    2 × 2
 #> # Row indices: grp2 [2]
 #> # Col index:   grp1
 #>    grp2 val$A    $B    $C
@@ -179,7 +179,7 @@ p_df3
 # groups version
 pivot_grps(p_df3, rows = "grp1",
            cols = "grp2")
-#> # A tibble:    3 x 2
+#> # A tibble:    3 × 2
 #> # Row indices: grp1 [3]
 #> # Col index:   grp2
 #>   grp1  val$`1`  $`2`
