@@ -184,7 +184,7 @@ fill_irow <- function (Idata, gdata) {
   sel_plm <- map_lgl(expanded, ~ "polymiss" %in% class(.))
   expanded[sel_plm] <- map_df(expanded[sel_plm], ~ field(., "x"))
   
-  tidyr::unnest(expanded, cols = .data$data)
+  tidyr::unnest(expanded, cols = "data")
 }
 
 # Get All Applicable Values in the First Column
@@ -221,7 +221,7 @@ group_vars.igrouped_df <- function (x) {
   setdiff(names(dplyr::group_data(x)), c(".rows", "I"))
 }
 
-#' @importFrom dplyr tbl_sum
+#' @importFrom pillar tbl_sum
 #' @export
 tbl_sum.igrouped_df <- function (x) {
   grps <- dplyr::n_groups(x)

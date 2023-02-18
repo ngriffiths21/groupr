@@ -1,4 +1,6 @@
-# groupr (development version)
+# groupr 0.1.1
+
+* Use pillar::tbl_sum() instead of dplyr::tbl_sum() (#5)
 
 # groupr 0.1.0
 

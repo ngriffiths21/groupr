@@ -1,6 +1,6 @@
 Package: groupr
 Title: Groups with Inapplicable Values
-Version: 0.1.0.9000
+Version: 0.1.1
 Authors@R: 
     person(given = "Nicholas",
            family = "Griffiths",
@@ -15,17 +15,17 @@ License: MIT + file LICENSE
 URL: https://github.com/ngriffiths21/groupr
 BugReports: https://github.com/ngriffiths21/groupr/issues
 Encoding: UTF-8
-LazyData: true
 Suggests: 
     testthat,
     knitr,
     rmarkdown,
     covr
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Imports: 
     dplyr,
     rlang,
     vctrs,
+    pillar,
     purrr,
     tidyr,
     tibble
