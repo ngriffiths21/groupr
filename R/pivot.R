@@ -33,9 +33,24 @@ pivot_grps <- function (x, rows = NULL, cols = NULL) {
   }
   pivot_gc(pivot_cg(x, rows), cols)
 }
-  
 
-col_grps <- function (x, col) {
+# Converts a normal igrouped_df to data structure useful for internal pivoting operations
+to_pivoting_data <- function (data) {
+  grp_vars <- names(igroup_vars(data))
+  grps <- unique(data[grp_vars])
+  map(1:nrow(grps), \(grp_num) {
+    grp_def <- grps[grp_num,]
+    grp_data <- reduce(1:length(grp_def), .init = data, .f = \(remaining_data, grpvar_num) {
+      next_filter <- grp_def[grpvar_num]
+      grp_row_ind <- remaining_data[[names(next_filter)]] == unlist(next_filter)
+      remaining_data[grp_row_ind,]
+    })
+    data_vars <- setdiff(names(data), grp_vars)
+    c(grp_def, list(.data = grp_data[data_vars]))
+  })
+}
+
+cols_to_rgrps <- function (x, col) {
   cgrps <- attr(x, "colgroups")
   
   cbind(
@@ -66,10 +81,8 @@ pivot_cg <- function (x, rows) {
   if (!rows %in% col_index_name(x)) { 
     abort(paste0("pivot_grps: column grouping `", rows, "` does not exist"), class = "error_miss_col")
   }
-  out <- dplyr::group_modify(
-    x, ~ col_grps(., rows)
-  )
-  group_by2(out, !!!old_igrps, !!rlang::sym(rows))
+
+  group_by2(cols_to_rgrps(x, rows), !!!old_igrps, !!rlang::sym(rows))
 }
             
 grp_cols <- function (x, colgrps) {

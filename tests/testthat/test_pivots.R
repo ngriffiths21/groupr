@@ -124,5 +124,11 @@ test_that("can recover inapplicable row groupings after pivoting to columns", {
   stop("incorrect pivoting")
 })
 
-
+test_that("can convert an igrouped_df to internal pivot structure", {
+  hierarchical |>
+    group_by2(grp, type, subgrp = "na") |>
+    to_pivoting_data() -> int_test
+  
+  stop("test not written yet")
+})
   
