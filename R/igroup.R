@@ -48,8 +48,12 @@ group_by2.data.frame <- function (data, ...) {
   
   iwalk(dots, function (.x, .y) {
     if(!all(.x %in% data[[.y]])) {
-      abort(paste0("group_by2: could not mark value `", .x, "` of `", .y,
-                   "` as inapplicable."))
+      abort(paste0("group_by2: could not mark value(s) {",
+                   paste0(.x, collapse=", "),
+                   "} inapplicable in `",
+                   .y,
+                   "` because 1+ of those following values don't exist"
+      ))
     }
   })
 
