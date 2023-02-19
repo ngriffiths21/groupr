@@ -1,0 +1,5 @@
+#' Scientists
+#' 
+#' Scientists dataset
+#'
+"scientists"
