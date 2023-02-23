@@ -131,4 +131,14 @@ test_that("can convert an igrouped_df to internal pivot structure", {
   
   stop("test not written yet")
 })
+
+test_that("can convert internal pivot data to igrouped_df", {
+  hierarchical |>
+    group_by2(grp, type, subgrp = "na") |>
+    to_pivot_data() -> int_test
+  
+  from_test <- from_pivot_data(int_test, cols = "grp")
+  
+  stop("test not written and no column pivots yet")
+})
   

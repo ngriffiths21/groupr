@@ -35,8 +35,12 @@ pivot_grps <- function (x, rows = NULL, cols = NULL) {
 }
 
 # Converts a normal igrouped_df to data structure useful for internal pivoting operations
-to_pivoting_data <- function (data) {
+to_pivot_data <- function (data) {
   grp_vars <- names(igroup_vars(data))
+  if (length(grp_vars) == 0) {
+    stop("to_pivoting_data: `data` must be an igrouped data frame")
+  }
+  
   grps <- unique(data[grp_vars])
   map(1:nrow(grps), \(grp_num) {
     grp_def <- grps[grp_num,]
@@ -47,6 +51,19 @@ to_pivoting_data <- function (data) {
     })
     data_vars <- setdiff(names(data), grp_vars)
     c(grp_def, list(.data = grp_data[data_vars]))
+  })
+}
+
+# Convert back to igrouped_df
+from_pivot_data <- function (x, cols, rows) {
+  map_dfr(x, \(grp_w_data) {
+    if (class(grp_w_data) != "list") {
+      stop("from_pivot_data: can't read format, `x` must be internal pivot data")
+    }
+    nrows <- nrow(grp_w_data$.data)
+    without_data <- grp_w_data[names(grp_w_data) != ".data"]
+    unpacked_grp_cols <- as.data.frame(lapply(without_data, rep, nrows))
+    cbind(unpacked_grp_cols, grp_w_data$.data)
   })
 }
 
