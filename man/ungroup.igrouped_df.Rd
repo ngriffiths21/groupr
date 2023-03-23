@@ -4,10 +4,12 @@
 \alias{ungroup.igrouped_df}
 \title{Ungroup a Tibble With Inapplicable Groups}
 \usage{
-\method{ungroup}{igrouped_df}(x)
+\method{ungroup}{igrouped_df}(x, ...)
 }
 \arguments{
 \item{x}{An igrouped tibble (as created by group_by2)}
+
+\item{...}{Ignored. All variables are removed from the grouping.}
 }
 \value{
 A tibble with no groups. The "groups" attribute will be set to
