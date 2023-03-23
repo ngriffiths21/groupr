@@ -101,11 +101,12 @@ dot_to_arg <- function (i, dots) {
 #' Ungroup method for tibbles that have inapplicable groups.
 #'
 #' @param x An igrouped tibble (as created by group_by2)
+#' @param ... Ignored. All variables are removed from the grouping.
 #' @return A tibble with no groups. The "groups" attribute will be set to
 #' contain one column, .rows, with a single value that lists all rows.
 #'
 #' @export
-ungroup.igrouped_df <- function (x) {
+ungroup.igrouped_df <- function (x, ...) {
   attr(x, "groups") <- NULL
   as_tibble(x)
 }
